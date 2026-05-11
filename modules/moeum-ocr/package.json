@@ -1,0 +1,13 @@
+{
+  "name": "moeum-ocr",
+  "version": "0.1.0",
+  "description": "On-device OCR for Moeum — iOS Apple Vision (Phase 1), Android ML Kit (Phase 1.5).",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}
