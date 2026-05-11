@@ -1,0 +1,56 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Native
+.kotlin/
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# local env files
+.env*.local
+
+# typescript
+*.tsbuildinfo
+
+# generated native folders — keep committed after prebuild (위젯 Xcode 타깃 추가 필요, PRD §1)
+# /ios
+# /android
+
+# Moeum-specific
+.eas/
+ios/build/
+android/build/
+
+# OS / editor
+.idea/
+.vscode/
+
+# Claude Code local-only
+.claude/settings.local.json
+
+# temp
+__tmp_expo/

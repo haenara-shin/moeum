@@ -1,0 +1,50 @@
+{
+  "expo": {
+    "name": "모음",
+    "slug": "moeum",
+    "scheme": "moeum",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "com.haenara.moeum",
+      "supportsTablet": false,
+      "infoPlist": {
+        "NSCameraUsageDescription": "문장 추출(OCR)을 위해 카메라를 사용합니다. 이미지 데이터는 기기 내에서만 처리되며 외부로 전송되지 않습니다.",
+        "NSPhotoLibraryUsageDescription": "스크린샷에서 문장을 추출하기 위해 사진 라이브러리에 접근합니다. 선택한 이미지는 기기 내에서만 처리됩니다.",
+        "NSPhotoLibraryAddUsageDescription": "공유용 이미지 카드 저장(향후 기능)을 위해 사진 라이브러리에 접근합니다."
+      },
+      "config": {
+        "usesNonExemptEncryption": false
+      }
+    },
+    "android": {
+      "package": "com.haenara.moeum",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#000000"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": false
+    }
+  }
+}
