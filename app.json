@@ -35,13 +35,7 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      [
-        "expo-notifications",
-        {
-          "icon": "./assets/icon.png",
-          "color": "#000000"
-        }
-      ]
+      "./plugins/withRemoveApsEntitlement"
     ],
     "experiments": {
       "typedRoutes": false
