@@ -109,7 +109,10 @@ public class MoeumOcrModule: Module {
     request.recognitionLanguages = ["ko-KR", "en-US"]
     request.recognitionLevel = .accurate
     request.usesLanguageCorrection = true
-    request.automaticallyDetectsLanguage = false
+    // automaticallyDetectsLanguage requires iOS 16+; recognitionLanguages already pins languages.
+    if #available(iOS 16.0, *) {
+      request.automaticallyDetectsLanguage = false
+    }
 
     let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
 
