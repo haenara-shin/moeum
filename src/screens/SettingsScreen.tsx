@@ -1,11 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Alert, Linking, Platform, Pressable, ScrollView, Switch, Text, View } from 'react-native';
+import {
+  ActionSheetIOS,
+  Alert,
+  Linking,
+  Platform,
+  Pressable,
+  ScrollView,
+  Switch,
+  Text,
+  View,
+} from 'react-native';
 import DateTimePicker, { type DateTimePickerEvent } from '@react-native-community/datetimepicker';
 import { useFocusEffect } from '@react-navigation/native';
 import { useThemeStore, type ThemePreference } from '../store/theme';
 import { useNotificationStore } from '../store/notification';
+import { useFoldersStore } from '../store/folders';
 import { getPermissionStatus } from '../lib/notifications';
 import { countQuotes } from '../db';
+import { exportAndShare, pickAndImport } from '../lib/backup';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
   { value: 'system', label: '시스템 기본', hint: 'iOS 설정의 다크모드 따름' },
@@ -22,16 +34,87 @@ function formatTime(hour: number, minute: number): string {
 export function SettingsScreen() {
   const { preference, setPreference } = useThemeStore();
   const { enabled, hour, minute, setEnabled, setTime } = useNotificationStore();
+  const folders = useFoldersStore((s) => s.folders);
+  const reloadFolders = useFoldersStore((s) => s.reload);
   const [count, setCount] = useState<number | null>(null);
   const [permStatus, setPermStatus] = useState<string>('undetermined');
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [busy, setBusy] = useState(false);
 
   useFocusEffect(
     useCallback(() => {
-      void countQuotes().then(setCount);
+      void countQuotes('all').then(setCount);
       void getPermissionStatus().then(setPermStatus);
-    }, []),
+      void reloadFolders();
+    }, [reloadFolders]),
   );
+
+  const onExportAll = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await exportAndShare('all', '전체');
+    } catch (e) {
+      Alert.alert('내보내기 실패', (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const onExportByFolder = () => {
+    if (Platform.OS !== 'ios') return;
+    const options = ['취소', '전체', '미분류', ...folders.map((f) => f.name)];
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        title: '내보낼 범위',
+        options,
+        cancelButtonIndex: 0,
+      },
+      async (idx) => {
+        if (idx === 0 || busy) return;
+        setBusy(true);
+        try {
+          if (idx === 1) {
+            await exportAndShare('all', '전체');
+          } else if (idx === 2) {
+            await exportAndShare(null, '미분류');
+          } else {
+            const folder = folders[idx - 3];
+            if (folder?.id != null) {
+              await exportAndShare(folder.id, folder.name);
+            }
+          }
+        } catch (e) {
+          Alert.alert('내보내기 실패', (e as Error).message);
+        } finally {
+          setBusy(false);
+        }
+      },
+    );
+  };
+
+  const onImport = async () => {
+    if (busy) return;
+    setBusy(true);
+    try {
+      const summary = await pickAndImport();
+      if (summary.newQuotes === 0 && summary.newFolders === 0 && summary.duplicates === 0) {
+        // 사용자가 취소
+        return;
+      }
+      const lines = [
+        `새 문장: ${summary.newQuotes}개`,
+        summary.newFolders > 0 ? `새 폴더: ${summary.newFolders}개` : '',
+        summary.duplicates > 0 ? `이미 있는 문장: ${summary.duplicates}개 건너뜀` : '',
+      ].filter(Boolean);
+      Alert.alert('가져오기 완료', lines.join('\n'));
+      void countQuotes('all').then(setCount);
+    } catch (e) {
+      Alert.alert('가져오기 실패', (e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const onToggleNotification = async (next: boolean) => {
     const ok = await setEnabled(next);
@@ -164,6 +247,34 @@ export function SettingsScreen() {
               {count == null ? '…' : `${count}개`}
             </Text>
           </View>
+          <Pressable
+            onPress={onExportByFolder}
+            disabled={busy}
+            className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : busy ? 0.5 : 1 })}
+          >
+            <View className="flex-1">
+              <Text className="text-base text-ink-900 dark:text-white">내보내기 / 공유</Text>
+              <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                전체 또는 폴더별 JSON으로 카톡·메일·AirDrop
+              </Text>
+            </View>
+            <Text className="text-base text-gray-400 dark:text-gray-500">↗︎</Text>
+          </Pressable>
+          <Pressable
+            onPress={onImport}
+            disabled={busy}
+            className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : busy ? 0.5 : 1 })}
+          >
+            <View className="flex-1">
+              <Text className="text-base text-ink-900 dark:text-white">가져오기</Text>
+              <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                다른 모음 사용자가 보낸 JSON 파일 열기 (중복 자동 건너뜀)
+              </Text>
+            </View>
+            <Text className="text-base text-gray-400 dark:text-gray-500">↘︎</Text>
+          </Pressable>
         </View>
 
         {/* 정보 */}
