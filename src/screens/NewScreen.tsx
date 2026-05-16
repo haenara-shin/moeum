@@ -134,25 +134,33 @@ export function NewScreen() {
       >
         <View className="p-4">
           {!usedOcr && (
-            <View className="mb-4 flex-row gap-2">
-              <Pressable
-                onPress={pickFromCamera}
-                disabled={ocrRunning}
-                className="flex-1 items-center rounded-xl bg-white py-3 dark:bg-neutral-800"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-              >
-                <Text className="text-xl">📷</Text>
-                <Text className="mt-1 text-xs text-ink-900 dark:text-white">사진 찍기</Text>
-              </Pressable>
-              <Pressable
-                onPress={pickFromLibrary}
-                disabled={ocrRunning}
-                className="flex-1 items-center rounded-xl bg-white py-3 dark:bg-neutral-800"
-                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
-              >
-                <Text className="text-xl">🖼</Text>
-                <Text className="mt-1 text-xs text-ink-900 dark:text-white">사진첩에서</Text>
-              </Pressable>
+            <View className="mb-4">
+              <Text className="mb-2 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+                사진에서 자동 추출
+              </Text>
+              <View className="flex-row gap-2">
+                <Pressable
+                  onPress={pickFromCamera}
+                  disabled={ocrRunning}
+                  className="flex-1 items-center rounded-xl bg-white py-4 dark:bg-neutral-800"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text className="text-2xl">📷</Text>
+                  <Text className="mt-1 text-xs text-ink-900 dark:text-white">사진 찍기</Text>
+                </Pressable>
+                <Pressable
+                  onPress={pickFromLibrary}
+                  disabled={ocrRunning}
+                  className="flex-1 items-center rounded-xl bg-white py-4 dark:bg-neutral-800"
+                  style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+                >
+                  <Text className="text-2xl">🖼</Text>
+                  <Text className="mt-1 text-xs text-ink-900 dark:text-white">사진첩에서</Text>
+                </Pressable>
+              </View>
+              <Text className="mt-2 text-center text-[11px] text-gray-400 dark:text-gray-500">
+                또는 아래에 직접 입력하세요
+              </Text>
             </View>
           )}
 
