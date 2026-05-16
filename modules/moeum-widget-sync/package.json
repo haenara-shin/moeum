@@ -1,0 +1,13 @@
+{
+  "name": "moeum-widget-sync",
+  "version": "0.1.0",
+  "description": "App ↔ Widget bridge: App Group UserDefaults write + WidgetCenter reload.",
+  "main": "index.ts",
+  "types": "index.ts",
+  "private": true,
+  "peerDependencies": {
+    "expo": "*",
+    "react": "*",
+    "react-native": "*"
+  }
+}

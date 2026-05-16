@@ -23,6 +23,9 @@
       },
       "config": {
         "usesNonExemptEncryption": false
+      },
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.com.haenarashin.moeum"]
       }
     },
     "android": {
@@ -46,7 +49,8 @@
             "./assets/fonts/Pretendard-Bold.otf"
           ]
         }
-      ]
+      ],
+      "@bacons/apple-targets"
     ],
     "experiments": {
       "typedRoutes": false

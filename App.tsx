@@ -7,6 +7,7 @@ import { useFonts } from 'expo-font';
 import { getDb } from './src/db';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { TtsPlayerBar } from './src/components/TtsPlayerBar';
+import { syncWidget } from './src/lib/widgetSync';
 
 // 모든 Text / TextInput 기본 폰트 = Pretendard-Regular
 // fontWeight: 'bold'인 경우 Pretendard-Bold 자동 매핑은 RN이 처리하지 못하므로
@@ -31,6 +32,8 @@ export default function App() {
       try {
         await getDb();
         setReady(true);
+        // 앱 부팅 시 위젯 큐 한 번 갱신 (앱 외부에서 데이터 변경된 경우 대비)
+        void syncWidget();
       } catch (e) {
         setError((e as Error).message);
       }
