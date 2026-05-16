@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -33,6 +33,21 @@ export function ListScreen() {
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityLabel="설정"
+          hitSlop={12}
+          style={({ pressed }) => ({ opacity: pressed ? 0.5 : 1, paddingHorizontal: 4 })}
+        >
+          <Text style={{ fontSize: 20 }}>⚙︎</Text>
+        </Pressable>
+      ),
+    });
+  }, [navigation]);
+
   useEffect(() => {
     setSearch(debouncedSearch);
   }, [debouncedSearch, setSearch]);
@@ -64,18 +79,18 @@ export function ListScreen() {
       <Pressable
         onPress={() => item.id != null && navigation.navigate('Detail', { id: item.id })}
         onLongPress={() => onDelete(item)}
-        className="mx-4 my-2 rounded-2xl bg-white p-4 shadow-sm"
+        className="mx-4 my-2 rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-800"
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
       >
-        <Text className="text-base leading-6 text-ink-900" numberOfLines={3}>
+        <Text className="text-base leading-6 text-ink-900 dark:text-white" numberOfLines={3}>
           {item.body}
         </Text>
         {(item.author || item.source) && (
-          <Text className="mt-2 text-xs text-gray-500" numberOfLines={1}>
+          <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400" numberOfLines={1}>
             {[item.author, item.source].filter(Boolean).join(' · ')}
           </Text>
         )}
-        <Text className="mt-1 text-[10px] text-gray-400">
+        <Text className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">
           {item.created_at ? formatDate(item.created_at) : ''}
         </Text>
       </Pressable>
@@ -87,8 +102,10 @@ export function ListScreen() {
     () => (
       <View className="flex-1 items-center justify-center px-8 py-24">
         <Text className="text-4xl">📜</Text>
-        <Text className="mt-4 text-lg font-bold text-ink-900">첫 문장을 모아보세요</Text>
-        <Text className="mt-2 text-center text-sm text-gray-500">
+        <Text className="mt-4 text-lg font-bold text-ink-900 dark:text-white">
+          첫 문장을 모아보세요
+        </Text>
+        <Text className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
           우측 하단의 +를 눌러 메모하거나 사진에서 추출해보세요
         </Text>
       </View>
@@ -97,14 +114,14 @@ export function ListScreen() {
   );
 
   return (
-    <View className="flex-1 bg-ink-50">
+    <View className="flex-1 bg-ink-50 dark:bg-neutral-900">
       <View className="px-4 py-2">
         <TextInput
           value={searchInput}
           onChangeText={setSearchInput}
           placeholder="문장·저자 검색"
           placeholderTextColor="#999"
-          className="rounded-xl bg-white px-4 py-3 text-base text-ink-900"
+          className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
           returnKeyType="search"
           autoCorrect={false}
           autoCapitalize="none"

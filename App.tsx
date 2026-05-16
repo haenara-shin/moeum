@@ -24,9 +24,11 @@ export default function App() {
   if (error) {
     return (
       <SafeAreaProvider>
-        <View className="flex-1 items-center justify-center bg-ink-50 px-8">
-          <Text className="text-base font-bold text-red-600">DB 초기화 실패</Text>
-          <Text className="mt-2 text-xs text-gray-500">{error}</Text>
+        <View className="flex-1 items-center justify-center bg-ink-50 px-8 dark:bg-neutral-900">
+          <Text className="text-base font-bold text-red-600 dark:text-red-400">
+            DB 초기화 실패
+          </Text>
+          <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400">{error}</Text>
         </View>
       </SafeAreaProvider>
     );
@@ -35,8 +37,8 @@ export default function App() {
   if (!ready) {
     return (
       <SafeAreaProvider>
-        <View className="flex-1 items-center justify-center bg-ink-50">
-          <Text className="text-3xl font-bold text-ink-900">모음</Text>
+        <View className="flex-1 items-center justify-center bg-ink-50 dark:bg-neutral-900">
+          <Text className="text-3xl font-bold text-ink-900 dark:text-white">모음</Text>
           <ActivityIndicator className="mt-6" />
         </View>
       </SafeAreaProvider>

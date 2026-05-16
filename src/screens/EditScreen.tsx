@@ -62,16 +62,19 @@ export function EditScreen() {
     }
   });
 
-  if (!loaded) return <View className="flex-1 bg-ink-50" />;
+  if (!loaded) return <View className="flex-1 bg-ink-50 dark:bg-neutral-900" />;
 
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       style={{ flex: 1 }}
     >
-      <ScrollView className="flex-1 bg-ink-50" keyboardShouldPersistTaps="handled">
+      <ScrollView
+        className="flex-1 bg-ink-50 dark:bg-neutral-900"
+        keyboardShouldPersistTaps="handled"
+      >
         <View className="p-4">
-          <Text className="mb-2 text-sm font-bold text-ink-900">본문</Text>
+          <Text className="mb-2 text-sm font-bold text-ink-900 dark:text-white">본문</Text>
           <Controller
             control={control}
             name="body"
@@ -83,7 +86,7 @@ export function EditScreen() {
                 placeholderTextColor="#999"
                 multiline
                 textAlignVertical="top"
-                className="min-h-[160px] rounded-xl bg-white p-4 text-base leading-6 text-ink-900"
+                className="min-h-[160px] rounded-xl bg-white p-4 text-base leading-6 text-ink-900 dark:bg-neutral-800 dark:text-white"
               />
             )}
           />
@@ -91,7 +94,7 @@ export function EditScreen() {
             <Text className="mt-1 text-xs text-red-500">{errors.body.message}</Text>
           )}
 
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900">저자</Text>
+          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">저자</Text>
           <Controller
             control={control}
             name="author"
@@ -101,14 +104,14 @@ export function EditScreen() {
                 onChangeText={onChange}
                 placeholder="저자/화자"
                 placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900"
+                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
             )}
           />
 
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900">출처</Text>
+          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">출처</Text>
           <Controller
             control={control}
             name="source"
@@ -118,7 +121,7 @@ export function EditScreen() {
                 onChangeText={onChange}
                 placeholder="책 제목, URL 등"
                 placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900"
+                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
                 autoCapitalize="none"
                 autoCorrect={false}
               />
@@ -129,7 +132,7 @@ export function EditScreen() {
             onPress={onSubmit}
             disabled={!isValid || submitting}
             className={`mt-8 items-center rounded-2xl py-4 ${
-              !isValid || submitting ? 'bg-gray-300' : 'bg-accent-500'
+              !isValid || submitting ? 'bg-gray-300 dark:bg-neutral-700' : 'bg-accent-500'
             }`}
           >
             <Text className="text-base font-bold text-white">
@@ -138,7 +141,7 @@ export function EditScreen() {
           </Pressable>
 
           <Pressable onPress={() => navigation.goBack()} className="mt-3 items-center py-3">
-            <Text className="text-sm text-gray-500">취소</Text>
+            <Text className="text-sm text-gray-500 dark:text-gray-400">취소</Text>
           </Pressable>
         </View>
       </ScrollView>

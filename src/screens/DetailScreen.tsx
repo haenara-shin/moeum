@@ -51,7 +51,7 @@ export function DetailScreen() {
 
   if (loading) {
     return (
-      <View className="flex-1 items-center justify-center bg-ink-50">
+      <View className="flex-1 items-center justify-center bg-ink-50 dark:bg-neutral-900">
         <ActivityIndicator />
       </View>
     );
@@ -59,29 +59,29 @@ export function DetailScreen() {
 
   if (!quote) {
     return (
-      <View className="flex-1 items-center justify-center bg-ink-50 px-8">
-        <Text className="text-base text-gray-500">문장을 찾을 수 없습니다</Text>
+      <View className="flex-1 items-center justify-center bg-ink-50 px-8 dark:bg-neutral-900">
+        <Text className="text-base text-gray-500 dark:text-gray-400">문장을 찾을 수 없습니다</Text>
       </View>
     );
   }
 
   return (
-    <ScrollView className="flex-1 bg-ink-50">
+    <ScrollView className="flex-1 bg-ink-50 dark:bg-neutral-900">
       <View className="p-6">
-        <Text className="text-xl leading-9 text-ink-900">{quote.body}</Text>
+        <Text className="text-xl leading-9 text-ink-900 dark:text-white">{quote.body}</Text>
 
         {(quote.author || quote.source) && (
-          <View className="mt-6 border-t border-gray-200 pt-4">
+          <View className="mt-6 border-t border-gray-200 pt-4 dark:border-neutral-700">
             {quote.author && (
-              <Text className="text-sm text-gray-700">— {quote.author}</Text>
+              <Text className="text-sm text-gray-700 dark:text-gray-200">— {quote.author}</Text>
             )}
             {quote.source && (
-              <Text className="mt-1 text-xs text-gray-500">{quote.source}</Text>
+              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">{quote.source}</Text>
             )}
           </View>
         )}
 
-        <Text className="mt-6 text-[11px] text-gray-400">
+        <Text className="mt-6 text-[11px] text-gray-400 dark:text-gray-500">
           저장: {quote.created_at ? formatDate(quote.created_at) : '-'}
           {quote.updated_at && quote.updated_at !== quote.created_at
             ? ` · 수정: ${formatDate(quote.updated_at)}`
@@ -97,9 +97,9 @@ export function DetailScreen() {
           </Pressable>
           <Pressable
             onPress={onDelete}
-            className="flex-1 items-center rounded-2xl bg-red-50 py-3"
+            className="flex-1 items-center rounded-2xl bg-red-50 py-3 dark:bg-red-950"
           >
-            <Text className="text-sm font-bold text-red-600">삭제</Text>
+            <Text className="text-sm font-bold text-red-600 dark:text-red-300">삭제</Text>
           </Pressable>
         </View>
       </View>
