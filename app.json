@@ -46,12 +46,6 @@
         "projectId": "d2d30ae5-a921-4401-9fe0-cbcc08c9c324"
       }
     },
-    "owner": "haenara",
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/d2d30ae5-a921-4401-9fe0-cbcc08c9c324"
-    }
+    "owner": "haenara"
   }
 }
