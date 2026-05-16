@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   Alert,
+  Platform,
   Pressable,
   ScrollView,
   Share,
@@ -17,6 +19,7 @@ import * as Speech from 'expo-speech';
 import type { RootStackParamList } from '../navigation/types';
 import { getQuote } from '../db';
 import { useQuotesStore } from '../store/quotes';
+import { useFoldersStore } from '../store/folders';
 import type { Quote } from '../types/quote';
 import { formatDate } from '../lib/format';
 
@@ -27,6 +30,9 @@ export function DetailScreen() {
   const route = useRoute<Route>();
   const navigation = useNavigation<Nav>();
   const remove = useQuotesStore((s) => s.remove);
+  const move = useQuotesStore((s) => s.move);
+  const folders = useFoldersStore((s) => s.folders);
+  const reloadFolders = useFoldersStore((s) => s.reload);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [speaking, setSpeaking] = useState(false);
@@ -44,11 +50,12 @@ export function DetailScreen() {
   useFocusEffect(
     useCallback(() => {
       void load();
+      void reloadFolders();
       return () => {
         void Speech.stop();
         setSpeaking(false);
       };
-    }, [load]),
+    }, [load, reloadFolders]),
   );
 
   useEffect(() => {
@@ -102,6 +109,34 @@ export function DetailScreen() {
     }
   };
 
+  const onMoveFolder = () => {
+    if (!quote?.id || Platform.OS !== 'ios') return;
+    const options = ['취소', '미분류로 이동', ...folders.map((f) => f.name)];
+    ActionSheetIOS.showActionSheetWithOptions(
+      {
+        title: '폴더로 이동',
+        options,
+        cancelButtonIndex: 0,
+      },
+      async (idx) => {
+        if (idx === 0) return;
+        const target: number | null = idx === 1 ? null : folders[idx - 2]?.id ?? null;
+        if (quote.id != null) {
+          await move(quote.id, target);
+          // 화면 표시 갱신
+          const fresh = await getQuote(quote.id);
+          setQuote(fresh);
+        }
+      },
+    );
+  };
+
+  const folderName = (() => {
+    if (!quote) return null;
+    if (quote.folder_id == null) return '미분류';
+    return folders.find((f) => f.id === quote.folder_id)?.name ?? '미분류';
+  })();
+
   if (loading) {
     return (
       <View className="flex-1 items-center justify-center bg-ink-50 dark:bg-neutral-900">
@@ -131,6 +166,17 @@ export function DetailScreen() {
             ? ` · 수정: ${formatDate(quote.updated_at)}`
             : ''}
         </Text>
+
+        {/* 폴더 표시/이동 */}
+        <Pressable
+          onPress={onMoveFolder}
+          className="mt-4 flex-row items-center self-start rounded-full bg-white px-3 py-1.5 dark:bg-neutral-800"
+          style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+        >
+          <Text className="mr-1 text-xs text-gray-500 dark:text-gray-400">📁</Text>
+          <Text className="text-xs font-medium text-ink-900 dark:text-white">{folderName}</Text>
+          <Text className="ml-1 text-[10px] text-gray-400 dark:text-gray-500">변경 ›</Text>
+        </Pressable>
 
         {/* 재생 + 공유 */}
         <View className="mt-8 flex-row gap-3">

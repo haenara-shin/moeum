@@ -6,6 +6,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { getDb } from './src/db';
 import { RootNavigator } from './src/navigation/RootNavigator';
+import { TtsPlayerBar } from './src/components/TtsPlayerBar';
 
 // 모든 Text / TextInput 기본 폰트 = Pretendard-Regular
 // fontWeight: 'bold'인 경우 Pretendard-Bold 자동 매핑은 RN이 처리하지 못하므로
@@ -65,6 +66,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <RootNavigator />
+      <TtsPlayerBar />
       <StatusBar style="auto" />
     </SafeAreaProvider>
   );

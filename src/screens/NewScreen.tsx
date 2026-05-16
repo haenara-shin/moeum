@@ -21,6 +21,7 @@ import * as ImagePicker from 'expo-image-picker';
 import type { RootStackParamList } from '../navigation/types';
 import { QuoteInputSchema, type QuoteInput } from '../types/quote';
 import { useQuotesStore } from '../store/quotes';
+import { useFoldersStore } from '../store/folders';
 import { recognizeText } from '../../modules/moeum-ocr';
 import { removePageNumbers, removeBlankLines, tidyLineBreaks } from '../lib/cleanup';
 
@@ -103,14 +104,22 @@ export function NewScreen() {
     else if (source === 'library') void pickFromLibrary();
   }, [route.params?.source, pickFromCamera, pickFromLibrary]);
 
+  const currentFolder = useFoldersStore((s) => s.current);
+
   const onSubmit = handleSubmit(async (input) => {
     setSubmitting(true);
     try {
-      await add({
-        body: input.body.trim(),
-        author: null,
-        source: null,
-      });
+      // 'all' 선택 상태에서 저장하면 미분류(null), 특정 폴더면 그 폴더에
+      const folderId: number | null =
+        typeof currentFolder === 'number' ? currentFolder : null;
+      await add(
+        {
+          body: input.body.trim(),
+          author: null,
+          source: null,
+        },
+        folderId,
+      );
       navigation.goBack();
     } catch (e) {
       Alert.alert('저장 실패', (e as Error).message);

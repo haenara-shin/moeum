@@ -6,6 +6,7 @@ export const QuoteSchema = z.object({
   author: z.string().max(100).optional().nullable(),
   source: z.string().max(200).optional().nullable(),
   original_image_path: z.string().optional().nullable(),
+  folder_id: z.number().int().nullable().optional(),
   created_at: z.number().int().optional(),
   updated_at: z.number().int().optional(),
 });
