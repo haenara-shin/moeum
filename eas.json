@@ -29,6 +29,7 @@
     "production": {
       "ios": {
         "appleId": "haenara.shin@gmail.com",
+        "ascAppId": "6769943864",
         "appleTeamId": "V5N8C99576"
       }
     }
