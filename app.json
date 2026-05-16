@@ -15,7 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.haenara.moeum",
-      "supportsTablet": false,
+      "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "문장 추출(OCR)을 위해 카메라를 사용합니다. 이미지 데이터는 기기 내에서만 처리되며 외부로 전송되지 않습니다.",
         "NSPhotoLibraryUsageDescription": "스크린샷에서 문장을 추출하기 위해 사진 라이브러리에 접근합니다. 선택한 이미지는 기기 내에서만 처리됩니다.",
@@ -35,7 +35,8 @@
       "predictiveBackGestureEnabled": false
     },
     "plugins": [
-      "./plugins/withRemoveApsEntitlement"
+      "./plugins/withRemoveApsEntitlement",
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": false
@@ -45,6 +46,12 @@
         "projectId": "d2d30ae5-a921-4401-9fe0-cbcc08c9c324"
       }
     },
-    "owner": "haenara"
+    "owner": "haenara",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/d2d30ae5-a921-4401-9fe0-cbcc08c9c324"
+    }
   }
 }
