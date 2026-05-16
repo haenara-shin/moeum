@@ -14,7 +14,7 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "bundleIdentifier": "com.haenara.moeum",
+      "bundleIdentifier": "com.haenarashin.moeum",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "문장 추출(OCR)을 위해 카메라를 사용합니다. 이미지 데이터는 기기 내에서만 처리되며 외부로 전송되지 않습니다.",
@@ -26,7 +26,7 @@
       }
     },
     "android": {
-      "package": "com.haenara.moeum",
+      "package": "com.haenarashin.moeum",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
