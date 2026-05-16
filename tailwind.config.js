@@ -16,7 +16,8 @@ module.exports = {
         },
       },
       fontFamily: {
-        sans: ['Pretendard', 'System'],
+        sans: ['Pretendard-Regular', 'System'],
+        bold: ['Pretendard-Bold', 'System'],
       },
     },
   },

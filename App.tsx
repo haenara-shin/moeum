@@ -1,14 +1,29 @@
 import './global.css';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { ActivityIndicator, Text, TextInput, View } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { useFonts } from 'expo-font';
 import { getDb } from './src/db';
 import { RootNavigator } from './src/navigation/RootNavigator';
+
+// 모든 Text / TextInput 기본 폰트 = Pretendard-Regular
+// fontWeight: 'bold'인 경우 Pretendard-Bold 자동 매핑은 RN이 처리하지 못하므로
+// 두꺼운 글자에는 직접 fontFamily: 'Pretendard-Bold' 적용 필요.
+const TextAny = Text as unknown as { defaultProps?: { style?: unknown } };
+const InputAny = TextInput as unknown as { defaultProps?: { style?: unknown } };
+TextAny.defaultProps = TextAny.defaultProps || {};
+TextAny.defaultProps.style = { fontFamily: 'Pretendard-Regular' };
+InputAny.defaultProps = InputAny.defaultProps || {};
+InputAny.defaultProps.style = { fontFamily: 'Pretendard-Regular' };
 
 export default function App() {
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [fontsLoaded] = useFonts({
+    'Pretendard-Regular': require('./assets/fonts/Pretendard-Regular.otf'),
+    'Pretendard-Bold': require('./assets/fonts/Pretendard-Bold.otf'),
+  });
 
   useEffect(() => {
     (async () => {
@@ -20,6 +35,8 @@ export default function App() {
       }
     })();
   }, []);
+
+  const allReady = ready && fontsLoaded;
 
   if (error) {
     return (
@@ -34,7 +51,7 @@ export default function App() {
     );
   }
 
-  if (!ready) {
+  if (!allReady) {
     return (
       <SafeAreaProvider>
         <View className="flex-1 items-center justify-center bg-ink-50 dark:bg-neutral-900">

@@ -36,7 +36,17 @@
     },
     "plugins": [
       "./plugins/withRemoveApsEntitlement",
-      "expo-sqlite"
+      "expo-sqlite",
+      "@react-native-community/datetimepicker",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Pretendard-Regular.otf",
+            "./assets/fonts/Pretendard-Bold.otf"
+          ]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": false

@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import {
+  ActionSheetIOS,
   ActivityIndicator,
   Alert,
   FlatList,
+  Platform,
   Pressable,
   RefreshControl,
   Text,
@@ -144,7 +146,24 @@ export function ListScreen() {
       )}
 
       <Pressable
-        onPress={() => navigation.navigate('New')}
+        onPress={() => {
+          if (Platform.OS === 'ios') {
+            ActionSheetIOS.showActionSheetWithOptions(
+              {
+                options: ['취소', '직접 입력', '사진 찍기', '사진첩에서 선택'],
+                cancelButtonIndex: 0,
+                title: '새 문장을 어떻게 추가할까요?',
+              },
+              (buttonIndex) => {
+                if (buttonIndex === 1) navigation.navigate('New');
+                else if (buttonIndex === 2) navigation.navigate('New', { source: 'camera' });
+                else if (buttonIndex === 3) navigation.navigate('New', { source: 'library' });
+              },
+            );
+          } else {
+            navigation.navigate('New');
+          }
+        }}
         accessibilityLabel="새 문장 추가"
         className="absolute bottom-8 right-6 h-14 w-14 items-center justify-center rounded-full bg-accent-500 shadow-lg"
         style={({ pressed }) => ({ opacity: pressed ? 0.8 : 1 })}
