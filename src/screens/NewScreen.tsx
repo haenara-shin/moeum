@@ -108,8 +108,8 @@ export function NewScreen() {
     try {
       await add({
         body: input.body.trim(),
-        author: input.author?.trim() || null,
-        source: input.source?.trim() || null,
+        author: null,
+        source: null,
       });
       navigation.goBack();
     } catch (e) {
@@ -213,44 +213,6 @@ export function NewScreen() {
               </View>
             </View>
           )}
-
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">
-            저자 (선택)
-          </Text>
-          <Controller
-            control={control}
-            name="author"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                value={value ?? ''}
-                onChangeText={onChange}
-                placeholder="저자/화자"
-                placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            )}
-          />
-
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">
-            출처 (선택)
-          </Text>
-          <Controller
-            control={control}
-            name="source"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                value={value ?? ''}
-                onChangeText={onChange}
-                placeholder="책 제목, URL 등"
-                placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            )}
-          />
 
           <Pressable
             onPress={onSubmit}

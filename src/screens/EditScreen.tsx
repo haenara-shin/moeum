@@ -50,8 +50,8 @@ export function EditScreen() {
     try {
       await update(route.params.id, {
         body: input.body.trim(),
-        author: input.author?.trim() || null,
-        source: input.source?.trim() || null,
+        author: null,
+        source: null,
         original_image_path: input.original_image_path ?? null,
       });
       navigation.goBack();
@@ -93,40 +93,6 @@ export function EditScreen() {
           {errors.body && (
             <Text className="mt-1 text-xs text-red-500">{errors.body.message}</Text>
           )}
-
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">저자</Text>
-          <Controller
-            control={control}
-            name="author"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                value={value ?? ''}
-                onChangeText={onChange}
-                placeholder="저자/화자"
-                placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            )}
-          />
-
-          <Text className="mb-2 mt-6 text-sm font-bold text-ink-900 dark:text-white">출처</Text>
-          <Controller
-            control={control}
-            name="source"
-            render={({ field: { onChange, value } }) => (
-              <TextInput
-                value={value ?? ''}
-                onChangeText={onChange}
-                placeholder="책 제목, URL 등"
-                placeholderTextColor="#999"
-                className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            )}
-          />
 
           <Pressable
             onPress={onSubmit}

@@ -1,7 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Alert,
+  Pressable,
+  ScrollView,
+  Share,
+  Text,
+  View,
+} from 'react-native';
 import { useNavigation, useRoute, useFocusEffect } from '@react-navigation/native';
-import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
+import type {
+  NativeStackNavigationProp,
+  NativeStackScreenProps,
+} from '@react-navigation/native-stack';
+import * as Speech from 'expo-speech';
 import type { RootStackParamList } from '../navigation/types';
 import { getQuote } from '../db';
 import { useQuotesStore } from '../store/quotes';
@@ -17,6 +29,7 @@ export function DetailScreen() {
   const remove = useQuotesStore((s) => s.remove);
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
+  const [speaking, setSpeaking] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -31,8 +44,18 @@ export function DetailScreen() {
   useFocusEffect(
     useCallback(() => {
       void load();
+      return () => {
+        void Speech.stop();
+        setSpeaking(false);
+      };
     }, [load]),
   );
+
+  useEffect(() => {
+    return () => {
+      void Speech.stop();
+    };
+  }, []);
 
   const onDelete = () => {
     if (!quote?.id) return;
@@ -42,11 +65,41 @@ export function DetailScreen() {
         text: '삭제',
         style: 'destructive',
         onPress: async () => {
+          await Speech.stop();
           await remove(quote.id!);
           navigation.goBack();
         },
       },
     ]);
+  };
+
+  const onSpeak = async () => {
+    if (!quote) return;
+    if (speaking) {
+      await Speech.stop();
+      setSpeaking(false);
+      return;
+    }
+    setSpeaking(true);
+    Speech.speak(quote.body, {
+      language: 'ko-KR',
+      pitch: 1.0,
+      rate: 1.0,
+      onDone: () => setSpeaking(false),
+      onStopped: () => setSpeaking(false),
+      onError: () => setSpeaking(false),
+    });
+  };
+
+  const onShare = async () => {
+    if (!quote) return;
+    try {
+      await Share.share({
+        message: quote.body,
+      });
+    } catch (e) {
+      // user cancelled
+    }
   };
 
   if (loading) {
@@ -60,7 +113,9 @@ export function DetailScreen() {
   if (!quote) {
     return (
       <View className="flex-1 items-center justify-center bg-ink-50 px-8 dark:bg-neutral-900">
-        <Text className="text-base text-gray-500 dark:text-gray-400">문장을 찾을 수 없습니다</Text>
+        <Text className="text-base text-gray-500 dark:text-gray-400">
+          문장을 찾을 수 없습니다
+        </Text>
       </View>
     );
   }
@@ -70,17 +125,6 @@ export function DetailScreen() {
       <View className="p-6">
         <Text className="text-xl leading-9 text-ink-900 dark:text-white">{quote.body}</Text>
 
-        {(quote.author || quote.source) && (
-          <View className="mt-6 border-t border-gray-200 pt-4 dark:border-neutral-700">
-            {quote.author && (
-              <Text className="text-sm text-gray-700 dark:text-gray-200">— {quote.author}</Text>
-            )}
-            {quote.source && (
-              <Text className="mt-1 text-xs text-gray-500 dark:text-gray-400">{quote.source}</Text>
-            )}
-          </View>
-        )}
-
         <Text className="mt-6 text-[11px] text-gray-400 dark:text-gray-500">
           저장: {quote.created_at ? formatDate(quote.created_at) : '-'}
           {quote.updated_at && quote.updated_at !== quote.created_at
@@ -88,16 +132,41 @@ export function DetailScreen() {
             : ''}
         </Text>
 
-        <View className="mt-10 flex-row gap-3">
+        {/* 재생 + 공유 */}
+        <View className="mt-8 flex-row gap-3">
+          <Pressable
+            onPress={onSpeak}
+            className="flex-1 flex-row items-center justify-center rounded-2xl bg-white py-3 dark:bg-neutral-800"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-lg">{speaking ? '⏸' : '▶︎'}</Text>
+            <Text className="ml-2 text-sm font-bold text-ink-900 dark:text-white">
+              {speaking ? '멈추기' : '읽기'}
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={onShare}
+            className="flex-1 flex-row items-center justify-center rounded-2xl bg-white py-3 dark:bg-neutral-800"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-lg">↗︎</Text>
+            <Text className="ml-2 text-sm font-bold text-ink-900 dark:text-white">공유</Text>
+          </Pressable>
+        </View>
+
+        {/* 편집 + 삭제 */}
+        <View className="mt-3 flex-row gap-3">
           <Pressable
             onPress={() => navigation.navigate('Edit', { id: quote.id! })}
             className="flex-1 items-center rounded-2xl bg-accent-500 py-3"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Text className="text-sm font-bold text-white">편집</Text>
           </Pressable>
           <Pressable
             onPress={onDelete}
             className="flex-1 items-center rounded-2xl bg-red-50 py-3 dark:bg-red-950"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
             <Text className="text-sm font-bold text-red-600 dark:text-red-300">삭제</Text>
           </Pressable>

@@ -97,12 +97,7 @@ export function ListScreen() {
         <Text className="text-base leading-6 text-ink-900 dark:text-white" numberOfLines={3}>
           {item.body}
         </Text>
-        {(item.author || item.source) && (
-          <Text className="mt-2 text-xs text-gray-500 dark:text-gray-400" numberOfLines={1}>
-            {[item.author, item.source].filter(Boolean).join(' · ')}
-          </Text>
-        )}
-        <Text className="mt-1 text-[10px] text-gray-400 dark:text-gray-500">
+        <Text className="mt-2 text-[10px] text-gray-400 dark:text-gray-500">
           {item.created_at ? formatDate(item.created_at) : ''}
         </Text>
       </Pressable>
