@@ -50,8 +50,7 @@
             "./assets/fonts/Pretendard-Bold.otf"
           ]
         }
-      ],
-      "@bacons/apple-targets"
+      ]
     ],
     "experiments": {
       "typedRoutes": false
