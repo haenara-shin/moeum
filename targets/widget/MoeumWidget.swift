@@ -1,14 +1,10 @@
-// MoeumWidget.swift — 모음(Moeum) iOS Home/Lock Screen Widget
-// PRD §5.1 FR-004, §7 R9 (위젯 메모리 < 30MB)
-
 import WidgetKit
 import SwiftUI
 
-// MARK: - App Group config
+// MARK: - App Group
 private enum WidgetConstants {
   static let appGroup = "group.com.haenarashin.moeum"
   static let snapshotKey = "widget_quotes_v1"
-  static let staleAfter: TimeInterval = 60 * 60 * 24
   static let rotateInterval: TimeInterval = 60 * 60 * 4
 }
 
@@ -24,94 +20,62 @@ private struct WidgetSnapshot: Codable {
   let items: [WidgetQuote]
 }
 
-private func loadSnapshot() -> WidgetSnapshot? {
+private func loadItems() -> [WidgetQuote] {
   guard let defaults = UserDefaults(suiteName: WidgetConstants.appGroup),
         let raw = defaults.string(forKey: WidgetConstants.snapshotKey),
-        let data = raw.data(using: .utf8) else {
-    return nil
+        let data = raw.data(using: .utf8),
+        let snap = try? JSONDecoder().decode(WidgetSnapshot.self, from: data) else {
+    return []
   }
-  return try? JSONDecoder().decode(WidgetSnapshot.self, from: data)
+  return snap.items
 }
 
 // MARK: - Entry
 struct MoeumEntry: TimelineEntry {
   let date: Date
   let quote: String
-  let isPlaceholder: Bool
 }
 
-// MARK: - Timeline Provider
+// MARK: - Provider
 struct Provider: TimelineProvider {
   func placeholder(in context: Context) -> MoeumEntry {
-    MoeumEntry(date: Date(), quote: "좋은 문장을 모으는 시간", isPlaceholder: true)
+    MoeumEntry(date: Date(), quote: "좋은 문장을 모으는 시간")
   }
 
   func getSnapshot(in context: Context, completion: @escaping (MoeumEntry) -> Void) {
-    completion(makeEntry(at: Date(), offset: 0))
+    completion(entry(at: Date(), offset: 0))
   }
 
   func getTimeline(in context: Context, completion: @escaping (Timeline<MoeumEntry>) -> Void) {
     let now = Date()
-    let snap = loadSnapshot()
-    let items = snap?.items ?? []
-    let isStale = snap.map { isSnapshotStale($0, now: now) } ?? true
-
     var entries: [MoeumEntry] = []
-    if items.isEmpty || isStale {
-      let message = items.isEmpty ? "모음에서 첫 문장을 추가해보세요" : "앱을 한 번 열어주세요"
-      entries.append(MoeumEntry(date: now, quote: message, isPlaceholder: items.isEmpty))
-    } else {
-      let lookahead = 6
-      for i in 0..<lookahead {
-        let date = now.addingTimeInterval(WidgetConstants.rotateInterval * Double(i))
-        let idx = (i + indexForCurrentTime(now: now, count: items.count)) % items.count
-        entries.append(MoeumEntry(date: date, quote: items[idx].body, isPlaceholder: false))
-      }
+    for i in 0..<6 {
+      let date = now.addingTimeInterval(WidgetConstants.rotateInterval * Double(i))
+      entries.append(entry(at: date, offset: i))
     }
-
-    let nextRefresh = now.addingTimeInterval(WidgetConstants.rotateInterval)
-    completion(Timeline(entries: entries, policy: .after(nextRefresh)))
+    let next = now.addingTimeInterval(WidgetConstants.rotateInterval)
+    completion(Timeline(entries: entries, policy: .after(next)))
   }
 
-  private func makeEntry(at date: Date, offset: Int) -> MoeumEntry {
-    let snap = loadSnapshot()
-    let items = snap?.items ?? []
+  private func entry(at date: Date, offset: Int) -> MoeumEntry {
+    let items = loadItems()
     if items.isEmpty {
-      return MoeumEntry(date: date, quote: "모음에서 첫 문장을 추가해보세요", isPlaceholder: true)
+      return MoeumEntry(date: date, quote: "모음에서 첫 문장을 추가해보세요")
     }
-    let idx = (offset + indexForCurrentTime(now: date, count: items.count)) % items.count
-    return MoeumEntry(date: date, quote: items[idx].body, isPlaceholder: false)
-  }
-
-  private func indexForCurrentTime(now: Date, count: Int) -> Int {
-    guard count > 0 else { return 0 }
-    let blocks = Int(now.timeIntervalSince1970 / WidgetConstants.rotateInterval)
-    return ((blocks % count) + count) % count
-  }
-
-  private func isSnapshotStale(_ snap: WidgetSnapshot, now: Date) -> Bool {
-    let generated = snap.generated_at / 1000
-    return now.timeIntervalSince1970 - generated > WidgetConstants.staleAfter
+    let blocks = Int(date.timeIntervalSince1970 / WidgetConstants.rotateInterval)
+    let idx = ((offset + blocks) % items.count + items.count) % items.count
+    return MoeumEntry(date: date, quote: items[idx].body)
   }
 }
 
-// MARK: - Views
-private func truncate(_ s: String, max: Int) -> String {
-  if s.count <= max { return s }
-  let end = s.index(s.startIndex, offsetBy: max)
-  return String(s[..<end]) + "…"
-}
-
+// MARK: - View
 struct MoeumWidgetEntryView: View {
-  var entry: Provider.Entry
+  var entry: MoeumEntry
   @Environment(\.widgetFamily) var family
 
   var body: some View {
-    let limit = family == .systemSmall ? 60 : 200
-    let bodyText = truncate(entry.quote, max: limit)
-
     VStack(alignment: .leading, spacing: 6) {
-      Text(bodyText)
+      Text(truncated)
         .font(family == .systemSmall ? .system(size: 12) : .system(size: 14))
         .lineSpacing(2)
         .foregroundColor(.primary)
@@ -124,8 +88,14 @@ struct MoeumWidgetEntryView: View {
           .foregroundColor(.secondary)
       }
     }
-    .padding(family == .systemSmall ? 12 : 16)
     .widgetURL(URL(string: "moeum://"))
+  }
+
+  private var truncated: String {
+    let limit = family == .systemSmall ? 60 : 200
+    if entry.quote.count <= limit { return entry.quote }
+    let end = entry.quote.index(entry.quote.startIndex, offsetBy: limit)
+    return String(entry.quote[..<end]) + "…"
   }
 }
 
@@ -135,23 +105,12 @@ struct MoeumWidget: Widget {
   let kind: String = "MoeumWidget"
 
   var body: some WidgetConfiguration {
-    if #available(iOS 17.0, *) {
-      return StaticConfiguration(kind: kind, provider: Provider()) { entry in
-        MoeumWidgetEntryView(entry: entry)
-          .containerBackground(.fill.tertiary, for: .widget)
-      }
-      .configurationDisplayName("모음")
-      .description("저장한 문장 중 하나를 보여줍니다.")
-      .supportedFamilies([.systemSmall, .systemMedium])
-    } else {
-      return StaticConfiguration(kind: kind, provider: Provider()) { entry in
-        MoeumWidgetEntryView(entry: entry)
-          .padding()
-          .background(Color(.systemBackground))
-      }
-      .configurationDisplayName("모음")
-      .description("저장한 문장 중 하나를 보여줍니다.")
-      .supportedFamilies([.systemSmall, .systemMedium])
+    StaticConfiguration(kind: kind, provider: Provider()) { entry in
+      MoeumWidgetEntryView(entry: entry)
+        .containerBackground(.fill.tertiary, for: .widget)
     }
+    .configurationDisplayName("모음")
+    .description("저장한 문장 중 하나를 보여줍니다.")
+    .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
