@@ -15,6 +15,7 @@
     },
     "ios": {
       "bundleIdentifier": "com.haenarashin.moeum",
+      "appleTeamId": "V5N8C99576",
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "문장 추출(OCR)을 위해 카메라를 사용합니다. 이미지 데이터는 기기 내에서만 처리되며 외부로 전송되지 않습니다.",
