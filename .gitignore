@@ -54,3 +54,8 @@ android/build/
 
 # temp
 __tmp_expo/
+
+# @bacons/apple-targets generated artifacts (prebuild 시 재생성)
+targets/**/Assets.xcassets/
+targets/**/Info.plist
+targets/**/generated.entitlements
