@@ -1,5 +1,12 @@
 import * as SQLite from 'expo-sqlite';
-import { MIGRATIONS, SCHEMA_VERSION } from './schema';
+import {
+  CREATE_QUOTES,
+  CREATE_INDEX_CREATED_AT,
+  CREATE_INDEX_FOLDER,
+  CREATE_FOLDERS,
+  CREATE_META,
+  SCHEMA_VERSION,
+} from './schema';
 import type { Quote, QuoteInput } from '../types/quote';
 import type { Folder, FolderInput } from '../types/folder';
 
@@ -19,11 +26,20 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync(DB_NAME);
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
-  for (const stmt of MIGRATIONS) {
-    await db.execAsync(stmt);
-  }
-  // v1 → v2: quotes.folder_id 추가 (기존 사용자 데이터 보존)
+
+  // 1) 베이스 테이블 (v1 + v2 공통)
+  await db.execAsync(CREATE_QUOTES);
+  await db.execAsync(CREATE_INDEX_CREATED_AT);
+  await db.execAsync(CREATE_FOLDERS);
+  await db.execAsync(CREATE_META);
+
+  // 2) v1 → v2 마이그레이션 — 기존 사용자의 quotes 테이블에 folder_id 컬럼 추가
+  //    (CREATE TABLE IF NOT EXISTS는 기존 테이블이 있으면 skip하므로 ALTER 필요)
   await ensureColumn(db, 'quotes', 'folder_id', 'INTEGER');
+
+  // 3) folder_id 의존 인덱스 — 컬럼 확보 후 실행
+  await db.execAsync(CREATE_INDEX_FOLDER);
+
   await db.runAsync(
     `INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', ?)`,
     String(SCHEMA_VERSION),
