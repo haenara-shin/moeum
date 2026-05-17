@@ -1,20 +1,65 @@
-# 모음(Moeum) — PRD v1.2
+# 모음(Moeum) — PRD v1.3
 
 > **모두의 + 음** · "좋은 문장을 모으다"
 > 모음(母音) 이중 의미로 '문장의 본질'을 담는 1인 개발자용 iOS 앱
 >
+> **v1.3 변경점** (2026-05-17): Phase 1 큰 폭 확장 — TTS·공유·폴더 추가, author/source UI 제거, iOS 위젯 Phase 1.5 보류
 > **v1.2 변경점**: 시드 데이터 제거 — 100% 사용자 입력 콘텐츠 앱으로 포지셔닝 변경
 > **v1.1 변경점**: Codex + Gemini 적대적 리뷰 반영 — 핵심 5개 모순/누락/리스크 해소
 
 | 메타 | 값 |
 |---|---|
 | **프로젝트 코드명** | moeum |
-| **버전** | v1.2 (No seed content — pure UGC) |
-| **작성일** | 2026-05-11 (v1.0) → 2026-05-11 (v1.2) |
+| **버전** | v1.3 (Phase 1 expanded — TTS·Share·Folders) |
+| **작성일** | 2026-05-11 (v1.0) → 2026-05-17 (v1.3) |
 | **작성자** | Haenara Shin |
 | **시리즈** | 모임 / 모가 / 모여 / **모음** |
-| **타깃 출시** | 8주 + 4주 버퍼 (12주 워스트 케이스 — 학습 곡선 가중) |
-| **상태** | Draft v1.2, 개발 진행 중 (W1 환경 구성 완료) |
+| **Bundle ID** | `com.haenarashin.moeum` (모여와 동일 namespace) |
+| **ASC App ID** | `6769943864` |
+| **상태** | Phase 1 코어 기능 구현 완료, UI 폴리싱 + 출시 준비 단계 |
+
+---
+
+## v1.3 변경 요약
+
+### Phase 1 신규 포함 (debate 만장일치로 Phase 2였던 것들)
+- **단건 TTS** (DetailScreen ▶︎): expo-speech 한국어 재생
+- **단건 공유** (DetailScreen ↗︎): iOS Share Sheet (카톡·메일·메시지·AirDrop)
+- **폴더 기능**: folders 테이블 + 가로 칩 + 이동 ActionSheet + 폴더별 필터
+- **연속 TTS 재생**: 현재 폴더 큐 + 하단 PlayerBar (⏮ ⏸▶︎ ⏭ ✕)
+- **컬렉션 JSON 공유/가져오기**: 설정 → 내보내기(범위 선택)/가져오기, 중복 자동 감지
+- **설정 화면 + 테마 선택**: Light/Dark/System, zustand persist
+- **Pretendard 폰트** 번들 + 다크모드 색 보강
+
+### Phase 1에서 제거된 UI
+- author 입력 필드 — 데이터 컬럼은 보존, UI만 제거
+- source 입력 필드 — 동일
+
+### Phase 1.5로 보류
+- **iOS 위젯**: `@bacons/apple-targets` plugin이 pbxproj 주입은 OK이나
+  EAS Build cloud의 "Configure Xcode project" 단계에서 unknown error 반복.
+  코드는 `_phase1_5_targets/` 디렉토리에 보존. App Group entitlement,
+  `modules/moeum-widget-sync`, 앱 측 `syncWidget()` 호출은 그대로 유지.
+
+---
+
+## 빌드/배포 진척 (2026-05-11 ~ 17)
+
+| # | 결과 | 비고 |
+|---|---|---|
+| 1~3 | 환경 셋업 + EAS credentials | pnpm strict → `node-linker=hoisted` |
+| 4 | JS bundling fail | `react-native-css-interop` 누락 |
+| 5 | Build OK / TestFlight 미노출 | 모든 환경 정렬했음에도 |
+| 6 | submit fail | "build number 6 used" 충돌 |
+| 7 | Build·Submit OK / 미노출 | push entitlement 제거 시도 |
+| 8 | Build fail | SDK 54 vs vision-camera 충돌 (Nitro+worklets) |
+| 9 | Build fail (OCR 분리) | vision-camera가 진짜 원인 확인 |
+| 10 | Build·Submit OK / 미노출 | vision-camera 제거 + worklets 추가 |
+| **새 시작** | **Bundle ID 변경 `com.haenara.moeum` → `com.haenarashin.moeum`** | TestFlight 노출 성공! |
+| #2~3 (신 ASC 앱) | OCR·TTS·폴더·공유·테마·폰트·알림 | 모두 동작 |
+| #10~12 | Widget Configure Xcode project fail | Phase 1.5로 보류 |
+| #13 | App-only Build OK | DB 마이그레이션 버그 발견 |
+| **#14** | **App-only OK, DB v1→v2 마이그레이션 fix** | 현재 빌드 |
 
 ---
 
