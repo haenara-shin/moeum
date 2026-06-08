@@ -1,0 +1,11 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6B5FF0"/>
+      <stop offset="1" stop-color="#4A3FD6"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#bg)"/>
+  <text x="512" y="740" font-family="Pretendard, 'Noto Sans CJK KR', 'Apple SD Gothic Neo', 'PingFang SC', sans-serif" font-size="720" font-weight="900" fill="#FAFAF7" text-anchor="middle">모</text>
+  <rect x="232" y="836" width="560" height="14" rx="7" fill="#FAFAF7" opacity="0.55"/>
+</svg>

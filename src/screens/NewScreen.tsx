@@ -8,8 +8,10 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from 'react-native';
+import { useThemeStore, resolveScheme } from '../store/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type {
   NativeStackNavigationProp,
@@ -49,6 +51,11 @@ export function NewScreen() {
   });
 
   const body = watch('body');
+
+  const systemScheme = useColorScheme();
+  const themePref = useThemeStore((s) => s.preference);
+  const scheme = resolveScheme(themePref, systemScheme);
+  const placeholderColor = scheme === 'dark' ? '#666' : '#9CA3AF';
 
   const runOcrFromUri = useCallback(
     async (uri: string) => {
@@ -191,7 +198,7 @@ export function NewScreen() {
                 value={value ?? ''}
                 onChangeText={onChange}
                 placeholder="좋은 문장을 적어보세요"
-                placeholderTextColor="#999"
+                placeholderTextColor={placeholderColor}
                 multiline
                 textAlignVertical="top"
                 className="min-h-[180px] rounded-xl bg-white p-4 text-base leading-6 text-ink-900 dark:bg-neutral-800 dark:text-white"

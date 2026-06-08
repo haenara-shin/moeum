@@ -1,5 +1,16 @@
 import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  useColorScheme,
+  View,
+} from 'react-native';
+import { useThemeStore, resolveScheme } from '../store/theme';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import type { NativeStackNavigationProp, NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useForm, Controller } from 'react-hook-form';
@@ -18,6 +29,11 @@ export function EditScreen() {
   const update = useQuotesStore((s) => s.update);
   const [submitting, setSubmitting] = useState(false);
   const [loaded, setLoaded] = useState(false);
+
+  const systemScheme = useColorScheme();
+  const themePref = useThemeStore((s) => s.preference);
+  const scheme = resolveScheme(themePref, systemScheme);
+  const placeholderColor = scheme === 'dark' ? '#666' : '#9CA3AF';
 
   const {
     control,
@@ -83,7 +99,7 @@ export function EditScreen() {
                 value={value ?? ''}
                 onChangeText={onChange}
                 placeholder="좋은 문장"
-                placeholderTextColor="#999"
+                placeholderTextColor={placeholderColor}
                 multiline
                 textAlignVertical="top"
                 className="min-h-[160px] rounded-xl bg-white p-4 text-base leading-6 text-ink-900 dark:bg-neutral-800 dark:text-white"

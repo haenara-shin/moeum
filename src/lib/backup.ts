@@ -115,7 +115,7 @@ export async function exportAndShare(
   await Sharing.shareAsync(fileUri, {
     mimeType: 'application/json',
     UTI: 'public.json',
-    dialogTitle: `모음 — ${folderLabel ?? '전체'} (${total}개)`,
+    dialogTitle: `모두의 마음가짐 — ${folderLabel ?? '전체'} (${total}개)`,
   });
 }
 
@@ -153,7 +153,7 @@ export async function pickAndImport(): Promise<ImportSummary> {
   }
 
   if (!isExportPayload(parsed)) {
-    throw new Error('모음 백업 파일이 아닙니다');
+    throw new Error('모두의 마음가짐 백업 파일이 아닙니다');
   }
 
   return applyImport(parsed);

@@ -185,7 +185,9 @@ export function DetailScreen() {
             className="flex-1 flex-row items-center justify-center rounded-2xl bg-white py-3 dark:bg-neutral-800"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
-            <Text className="text-lg">{speaking ? '⏸' : '▶︎'}</Text>
+            <Text className="text-lg text-ink-900 dark:text-white">
+              {speaking ? '⏸' : '▶︎'}
+            </Text>
             <Text className="ml-2 text-sm font-bold text-ink-900 dark:text-white">
               {speaking ? '멈추기' : '읽기'}
             </Text>
@@ -195,7 +197,7 @@ export function DetailScreen() {
             className="flex-1 flex-row items-center justify-center rounded-2xl bg-white py-3 dark:bg-neutral-800"
             style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
           >
-            <Text className="text-lg">↗︎</Text>
+            <Text className="text-lg text-ink-900 dark:text-white">↗︎</Text>
             <Text className="ml-2 text-sm font-bold text-ink-900 dark:text-white">공유</Text>
           </Pressable>
         </View>

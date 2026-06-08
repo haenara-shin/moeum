@@ -4,14 +4,17 @@ import {
   ActivityIndicator,
   Alert,
   FlatList,
+  Keyboard,
   Platform,
   Pressable,
   RefreshControl,
   ScrollView,
   Text,
   TextInput,
+  useColorScheme,
   View,
 } from 'react-native';
+import { useThemeStore, resolveScheme } from '../store/theme';
 import { useNavigation, useFocusEffect } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/types';
@@ -48,47 +51,35 @@ export function ListScreen() {
   const playList = useTtsPlayerStore((s) => s.playList);
   const [searchInput, setSearchInput] = useState('');
   const debouncedSearch = useDebounce(searchInput, 300);
+  const systemScheme = useColorScheme();
+  const themePref = useThemeStore((s) => s.preference);
+  const scheme = resolveScheme(themePref, systemScheme);
+  const placeholderColor = scheme === 'dark' ? '#666' : '#9CA3AF';
 
   useLayoutEffect(() => {
     navigation.setOptions({
       headerRight: () => (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16 }}>
-          <Pressable
-            onPress={() => {
-              if (items.length === 0) return;
-              playList(items, 0);
+        <Pressable
+          onPress={() => navigation.navigate('Settings')}
+          accessibilityLabel="설정"
+          hitSlop={16}
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.5 : 1,
+          })}
+        >
+          <Text
+            style={{
+              fontSize: 16,
+              fontFamily: 'Pretendard-Bold',
+              color: '#5B4FE5',
             }}
-            accessibilityLabel="전체 재생"
-            hitSlop={12}
-            disabled={items.length === 0}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : items.length === 0 ? 0.3 : 1,
-            })}
           >
-            <Text style={{ fontSize: 18, color: '#5B4FE5' }}>▶︎</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => navigation.navigate('Settings')}
-            accessibilityLabel="설정"
-            hitSlop={16}
-            style={({ pressed }) => ({
-              opacity: pressed ? 0.5 : 1,
-            })}
-          >
-            <Text
-              style={{
-                fontSize: 16,
-                fontFamily: 'Pretendard-Bold',
-                color: '#5B4FE5',
-              }}
-            >
-              설정
-            </Text>
-          </Pressable>
-        </View>
+            설정
+          </Text>
+        </Pressable>
       ),
     });
-  }, [navigation, items, playList]);
+  }, [navigation]);
 
   useEffect(() => {
     setSearch(debouncedSearch);
@@ -200,7 +191,7 @@ export function ListScreen() {
       <Pressable
         onPress={() => item.id != null && navigation.navigate('Detail', { id: item.id })}
         onLongPress={() => onDelete(item)}
-        className="mx-4 my-2 rounded-2xl bg-white p-4 shadow-sm dark:bg-neutral-800"
+        className="mx-4 my-2 rounded-2xl bg-white p-4 shadow-sm dark:border dark:border-neutral-700/50 dark:bg-neutral-800 dark:shadow-none"
         style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
       >
         <Text className="text-base leading-6 text-ink-900 dark:text-white" numberOfLines={3}>
@@ -214,64 +205,153 @@ export function ListScreen() {
     [navigation, onDelete],
   );
 
-  const empty = useMemo(
-    () => (
-      <View className="flex-1 items-center justify-center px-8 py-24">
-        <Text className="text-4xl">📜</Text>
-        <Text className="mt-4 text-lg font-bold text-ink-900 dark:text-white">
-          첫 문장을 모아보세요
+  const empty = useMemo(() => {
+    // 1) 검색 중 0건
+    if (debouncedSearch) {
+      return (
+        <View className="flex-1 items-center justify-center px-8 py-24">
+          <Text className="text-5xl">🔍</Text>
+          <Text className="mt-5 text-lg font-bold text-ink-900 dark:text-white">
+            검색 결과가 없어요
+          </Text>
+          <Text
+            className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400"
+            numberOfLines={2}
+          >
+            ‘{debouncedSearch}’와(과) 일치하는 문장을 찾지 못했어요
+          </Text>
+          <Pressable
+            onPress={() => {
+              setSearchInput('');
+              Keyboard.dismiss();
+            }}
+            className="mt-6 rounded-full bg-white px-5 py-2 dark:bg-neutral-800"
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+          >
+            <Text className="text-sm font-bold text-accent-500">검색어 지우기</Text>
+          </Pressable>
+        </View>
+      );
+    }
+
+    // 2) 특정 폴더 필터 중 0건
+    if (currentFolder !== 'all') {
+      const label =
+        currentFolder === null
+          ? '미분류'
+          : folders.find((f) => f.id === currentFolder)?.name ?? '';
+      return (
+        <View className="flex-1 items-center justify-center px-8 py-24">
+          <Text className="text-5xl">📁</Text>
+          <Text className="mt-5 text-lg font-bold text-ink-900 dark:text-white">
+            ‘{label}’에 문장이 없어요
+          </Text>
+          <Text className="mt-2 text-center text-sm leading-5 text-gray-500 dark:text-gray-400">
+            + 버튼으로 새 문장을 추가하거나{'\n'}상세 화면에서 이 폴더로 옮길 수 있어요
+          </Text>
+        </View>
+      );
+    }
+
+    // 3) 전체 첫 진입
+    return (
+      <View className="flex-1 items-center justify-center px-8 py-20">
+        <Text className="text-6xl">📜</Text>
+        <Text className="mt-6 text-xl font-bold text-ink-900 dark:text-white">
+          첫 문장을 모아볼까요?
         </Text>
-        <Text className="mt-2 text-center text-sm text-gray-500 dark:text-gray-400">
-          우측 하단의 +를 눌러 메모하거나 사진에서 추출해보세요
+        <Text className="mt-3 text-center text-sm leading-6 text-gray-500 dark:text-gray-400">
+          책·신문·기사에서 발견한 좋은 문장을{'\n'}
+          사진으로 자동 추출하거나 직접 적어보세요
         </Text>
+        <View className="mt-10 flex-row items-center">
+          <Text className="text-xs text-gray-400 dark:text-gray-500">
+            우측 하단 + 버튼으로 시작
+          </Text>
+          <Text className="ml-1 text-base text-gray-400 dark:text-gray-500">↘</Text>
+        </View>
       </View>
-    ),
-    [],
-  );
+    );
+  }, [debouncedSearch, currentFolder, folders]);
 
   return (
     <View className="flex-1 bg-ink-50 dark:bg-neutral-900">
       <View className="px-4 py-2">
-        <TextInput
-          value={searchInput}
-          onChangeText={setSearchInput}
-          placeholder="문장 검색"
-          placeholderTextColor="#999"
-          className="rounded-xl bg-white px-4 py-3 text-base text-ink-900 dark:bg-neutral-800 dark:text-white"
-          returnKeyType="search"
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
+        <View className="flex-row items-center rounded-xl bg-white px-4 dark:bg-neutral-800">
+          <Text className="mr-2 text-sm" style={{ color: placeholderColor }}>
+            🔍
+          </Text>
+          <TextInput
+            value={searchInput}
+            onChangeText={setSearchInput}
+            placeholder="문장 검색"
+            placeholderTextColor={placeholderColor}
+            className="flex-1 py-3 text-base text-ink-900 dark:text-white"
+            returnKeyType="search"
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+          {searchInput.length > 0 && (
+            <Pressable
+              onPress={() => {
+                setSearchInput('');
+                Keyboard.dismiss();
+              }}
+              hitSlop={10}
+              accessibilityLabel="검색어 지우기"
+            >
+              <Text style={{ color: placeholderColor, fontSize: 16 }}>✕</Text>
+            </Pressable>
+          )}
+        </View>
       </View>
 
-      {/* 폴더 칩 */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 4 }}
-        className="max-h-12 grow-0"
-      >
-        <FolderChip
-          label="전체"
-          active={currentFolder === 'all'}
-          onPress={() => setCurrent('all')}
-        />
-        <FolderChip
-          label="미분류"
-          active={currentFolder === null}
-          onPress={() => setCurrent(null)}
-        />
-        {folders.map((f) => (
+      {/* 폴더 칩 + 현재 목록 연속 재생 */}
+      <View className="flex-row items-center">
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 4 }}
+          className="max-h-12 flex-1"
+        >
           <FolderChip
-            key={f.id}
-            label={f.name}
-            active={currentFolder === f.id}
-            onPress={() => f.id != null && setCurrent(f.id)}
-            onLongPress={() => onLongPressFolder(f)}
+            label="전체"
+            active={currentFolder === 'all'}
+            onPress={() => setCurrent('all')}
           />
-        ))}
-        <FolderChip label="+ 새 폴더" active={false} onPress={onAddFolder} variant="add" />
-      </ScrollView>
+          <FolderChip
+            label="미분류"
+            active={currentFolder === null}
+            onPress={() => setCurrent(null)}
+          />
+          {folders.map((f) => (
+            <FolderChip
+              key={f.id}
+              label={f.name}
+              active={currentFolder === f.id}
+              onPress={() => f.id != null && setCurrent(f.id)}
+              onLongPress={() => onLongPressFolder(f)}
+            />
+          ))}
+          <FolderChip label="+ 새 폴더" active={false} onPress={onAddFolder} variant="add" />
+        </ScrollView>
+
+        <Pressable
+          onPress={() => {
+            if (items.length === 0) return;
+            playList(items, 0);
+          }}
+          disabled={items.length === 0}
+          accessibilityLabel="현재 목록 전체 재생"
+          hitSlop={10}
+          className="mr-3 ml-1 h-9 w-9 items-center justify-center rounded-full bg-white dark:border dark:border-neutral-700/50 dark:bg-neutral-800"
+          style={({ pressed }) => ({
+            opacity: pressed ? 0.6 : items.length === 0 ? 0.35 : 1,
+          })}
+        >
+          <Text style={{ fontSize: 14, color: '#5B4FE5' }}>▶︎</Text>
+        </Pressable>
+      </View>
 
       <FlatList
         data={items}
@@ -280,6 +360,8 @@ export function ListScreen() {
         contentContainerStyle={{ paddingVertical: 8, flexGrow: 1, paddingBottom: 120 }}
         ListEmptyComponent={loading ? null : empty}
         refreshControl={<RefreshControl refreshing={loading} onRefresh={reload} />}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
       />
 
       {loading && items.length === 0 && (

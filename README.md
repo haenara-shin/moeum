@@ -1,35 +1,35 @@
-# 모음 (Moeum)
+# 모두의 마음가짐 (Moeum)
 
 > 모두의 + 음 · "좋은 문장을 모으다"
 
-문장/명언 수집 iOS 앱. 직접 입력 또는 스크린샷 OCR로 좋은 문장을 모으고, 잠금/홈 위젯과 매일 알림으로 다시 만난다.
+책·신문·SNS·기사에서 만난 좋은 문장을 **사진 한 장(OCR)** 또는 직접 입력으로 모으고,
+**매일 알림**·**한국어 TTS**·**폴더 정리**로 다시 만나는 한국어 iOS 앱.
+모든 데이터는 기기 안에서만 처리되며 외부로 전송되지 않습니다.
 
-**시리즈**: 모임 / 모가 / 모여 / **모음** (4번째)
+**시리즈**: 모두의 임장 / 모두의 가계부 / 모두의 여행 / **모두의 마음가짐** (4번째)
+
+## 기능 (Phase 1)
+
+- 📷 사진에서 자동 글자 추출 (iOS Apple Vision OCR) + 빠른 정리(페이지 번호·공백·줄바꿈)
+- 🔔 매일 알림 — 저장한 문장을 다시 만나는 시간
+- ▶︎ 한국어 TTS — 단건 읽기 + 폴더 전체 연속 재생(하단 플레이어 바)
+- 📁 폴더로 정리 + 폴더별 필터·이동
+- ↗︎ 한 문장 공유(카톡·메일·AirDrop) + 컬렉션 JSON 내보내기/가져오기(중복 자동 건너뜀)
+- 🌗 라이트·다크·시스템 테마 + Pretendard 폰트
 
 ## 상태
 
-- 단계: Phase 1 MVP — W1 완료 (환경 구성), W2 진행 중
-- 출시 목표: 8주 + 4주 버퍼
-- PRD: [`docs/PRD.md`](./docs/PRD.md) (v1.2)
+- 단계: **Phase 1 코어 완료** — UI 폴리싱 + 출시 준비 중 (PRD v1.3)
+- PRD: [`docs/PRD.md`](./docs/PRD.md)
 - 입력 방식: 100% 사용자 입력 (직접 메모 / 카메라 / 사진첩 OCR)
+- 위젯(iOS WidgetKit): Phase 1.5로 보류 (`_phase1_5_targets/`에 코드 보존)
 
-## 문서
+## 기술 스택
 
-| 위치 | 내용 |
-|---|---|
-| `docs/PRD.md` | 제품 요구사항 정의서 (v1.2, Adversarial 검증 반영, 시드 제거) |
-| `.debate/20260511_173143_stack/SYNTHESIS.md` | 4-AI 기술 스택 합의안 (Opus·Sonnet·Gemini·Codex) |
-| `.debate/.../adversarial_*.md` | PRD 적대적 리뷰 원문 |
-
-## 기술 스택 (PRD §8)
-
-- React Native + **Expo SDK 55** (Managed + Dev Client + Prebuild)
-- 패키지 매니저: pnpm
-- OCR: 자체 Expo Module — iOS Apple Vision (Swift), Android ML Kit (Kotlin) Phase 1.5
-- 위젯: Swift WidgetKit + App Group + JSON 스냅샷 (SQLite 공유 금지)
-- TTS: Phase 2 (expo-speech)
-- 폰트: Pretendard Variable (위젯은 서브셋팅)
-- 저장: expo-sqlite (앱 전용) + UserDefaults(suiteName) (위젯)
+- React Native 0.81 + **Expo SDK 54** (Managed + Dev Client + Prebuild), 패키지 매니저 pnpm
+- OCR: 자체 Expo Module — iOS Apple Vision (Swift)
+- 저장: expo-sqlite / 상태: zustand / 스타일: NativeWind(Tailwind)
+- TTS: expo-speech · 알림: expo-notifications · 폰트: Pretendard
 
 ## 개발
 
@@ -38,8 +38,11 @@ pnpm install
 pnpm start        # Dev Client (Expo Go 아님)
 pnpm ios          # iOS 시뮬레이터
 pnpm prebuild     # ios/, android/ 네이티브 디렉토리 생성
+pnpm lint         # tsc --noEmit
 ```
 
-## 다음 작업 (W1~W8)
+## 문의
 
-PRD §6 참고. W1 초기화 → W2 입력/목록 → W3~4 OCR → W5 알림 → W6 위젯 → W7 백업 → W8 베타.
+- 이메일: haenara.shin@gmail.com
+- 버그·제안: [GitHub Issues](https://github.com/haenara-shin/moeum/issues)
+- 개인정보 처리방침: [`privacy.html`](./privacy.html)

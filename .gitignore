@@ -59,3 +59,7 @@ __tmp_expo/
 targets/**/Assets.xcassets/
 targets/**/Info.plist
 targets/**/generated.entitlements
+# Phase 1.5 보류 위젯 — 실제 폴더명은 _phase1_5_targets/ (소스만 추적, 산출물 제외)
+_phase1_5_targets/**/Assets.xcassets/
+_phase1_5_targets/**/Info.plist
+_phase1_5_targets/**/generated.entitlements

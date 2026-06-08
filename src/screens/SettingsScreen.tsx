@@ -121,7 +121,7 @@ export function SettingsScreen() {
     if (!ok && next) {
       Alert.alert(
         '알림 권한이 필요합니다',
-        '설정 앱에서 모음 알림을 허용해주세요.',
+        '설정 앱에서 ‘모두의 마음가짐’ 알림을 허용해주세요.',
         [
           { text: '취소', style: 'cancel' },
           { text: '설정 열기', onPress: () => Linking.openSettings() },
@@ -165,7 +165,7 @@ export function SettingsScreen() {
                   <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">{opt.hint}</Text>
                 </View>
                 {selected && (
-                  <Text className="text-accent-500 text-base" accessibilityLabel="선택됨">
+                  <Text className="text-base text-accent-500" accessibilityLabel="선택됨">
                     ✓
                   </Text>
                 )}
@@ -227,7 +227,7 @@ export function SettingsScreen() {
           {permStatus === 'denied' && (
             <View className="border-t border-gray-100 px-4 py-3 dark:border-neutral-700">
               <Text className="text-xs text-red-500 dark:text-red-400">
-                알림 권한이 거부됨 — 설정 → 모음 → 알림에서 허용해주세요.
+                알림 권한이 거부됨 — 설정 → 모두의 마음가짐 → 알림에서 허용해주세요.
               </Text>
               <Pressable onPress={() => Linking.openSettings()} className="mt-2">
                 <Text className="text-xs font-bold text-accent-500">설정 열기 →</Text>
@@ -270,7 +270,7 @@ export function SettingsScreen() {
             <View className="flex-1">
               <Text className="text-base text-ink-900 dark:text-white">가져오기</Text>
               <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-                다른 모음 사용자가 보낸 JSON 파일 열기 (중복 자동 건너뜀)
+                다른 ‘모두의 마음가짐’ 사용자가 보낸 JSON 파일 열기 (중복 자동 건너뜀)
               </Text>
             </View>
             <Text className="text-base text-gray-400 dark:text-gray-500">↘︎</Text>
@@ -286,10 +286,10 @@ export function SettingsScreen() {
             <Text className="flex-1 text-base text-ink-900 dark:text-white">버전</Text>
             <Text className="text-base text-gray-500 dark:text-gray-400">0.1.0</Text>
           </View>
-          <View className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700">
-            <Text className="flex-1 text-base text-ink-900 dark:text-white">시리즈</Text>
-            <Text className="text-base text-gray-500 dark:text-gray-400">
-              모임 · 모가 · 모여 · 모음
+          <View className="flex-row items-start border-t border-gray-100 px-4 py-4 dark:border-neutral-700">
+            <Text className="mr-3 text-base text-ink-900 dark:text-white">시리즈</Text>
+            <Text className="flex-1 text-right text-sm leading-5 text-gray-500 dark:text-gray-400">
+              모두의 임장 · 모두의 가계부 · 모두의 여행 · 모두의 마음가짐
             </Text>
           </View>
         </View>

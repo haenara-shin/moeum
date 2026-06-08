@@ -54,7 +54,7 @@ export function RootNavigator() {
           headerTitleStyle: { fontWeight: '700' },
         }}
       >
-        <Stack.Screen name="List" component={ListScreen} options={{ title: '모음' }} />
+        <Stack.Screen name="List" component={ListScreen} options={{ title: '모두의 마음가짐' }} />
         <Stack.Screen
           name="New"
           component={NewScreen}

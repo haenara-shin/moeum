@@ -3,7 +3,7 @@
  *
  * 전략 (MVP 단순화):
  * - 동일 시간 매일 트리거 (DailyTriggerInput)
- * - 메시지는 정적: "오늘의 모음 — 새 문장을 만나보세요"
+ * - 메시지는 정적: "오늘의 마음가짐 — 저장한 좋은 문장을 만나러 가보세요"
  * - 앱 진입 시 random 1개 노출
  * - 추후 7일치 prefetch + 랜덤 내용 차별화는 Phase 2
  */
@@ -40,7 +40,7 @@ export async function scheduleDaily(hour: number, minute: number): Promise<void>
   await Notifications.scheduleNotificationAsync({
     identifier: DAILY_NOTIFICATION_ID,
     content: {
-      title: '오늘의 모음',
+      title: '오늘의 마음가짐',
       body: '저장한 좋은 문장을 만나러 가보세요.',
       sound: 'default',
     },
