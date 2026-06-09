@@ -29,37 +29,32 @@
 
 ## STEP 2 — 빌드 #15 (EAS production)
 
-```bash
-# 1) 변경사항 커밋
-git add -A
-git commit -m "feat(release): v0.1.0 — UI 폴리싱 + 앱 아이콘"
+- [x] 변경 커밋·push 완료 (`31ebfdc`, origin/main 동기화)
+- [ ] production 빌드 — **대화형 세션에서 직접 실행** (EAS 로그인 필요, 자동 실행 불가):
 
-# 2) production 빌드
+```bash
 pnpm exec eas build --platform ios --profile production
+# (로그인 안 돼 있으면) pnpm exec eas login  먼저
 ```
 
 - [ ] 빌드 큐 성공 (빌드 #15)
 - [ ] TestFlight에 자동 처리 확인 (`processing → ready` 5~15분)
 - [ ] 실제 기기에서 새 아이콘 + 11개 기능 sanity check
+- [ ] **연속 TTS** 동작 확인 (폴더 칩 줄 ▶︎ → 하단 PlayerBar)
 
-## STEP 3 — 개인정보 처리방침 페이지 호스팅
+## STEP 3 — 개인정보 처리방침 페이지 호스팅 ✅ 완료 (2026-06-09)
 
 - [x] `privacy.html` 작성 완료 (repo 루트, 다크모드 대응 + 문의 이메일 포함)
-- [ ] GitHub 저장소 Settings → Pages → Source: `main / root`
-- [ ] 배포 후 URL 200 확인: `https://haenara-shin.github.io/moeum/privacy.html`
-- [ ] 모바일 브라우저에서 한국어 렌더 정상 확인
+- [x] GitHub Pages 활성화 — Source `main / root` (gh api로 설정)
+- [x] 배포 후 URL 200 확인: `https://haenara-shin.github.io/moeum/privacy.html` (HTTP 200 검증)
+- [x] 한국어 렌더 정상 — `<title>모두의 마음가짐(Moeum) 개인정보 처리방침</title>`
 
-> ⚠️ **선행 조건**: 이 URL이 뜨려면 repo가 **public**이어야 함 (현재 PRIVATE → 외부 404). 아래 STEP 3.5 참고.
-> GitHub Pages 대신 Notion 공개 페이지로도 가능 — URL이 https://면 됨.
+## STEP 3.5 — 지원 URL / repo 공개 ✅ 완료 (2026-06-09)
 
-## STEP 3.5 — 지원 URL / repo 공개 결정 (심사 Guideline 1.5)
-
-현재 `github.com/haenara-shin/moeum`이 **PRIVATE** → 지원 URL·개인정보 URL 모두 외부 404. 셋 중 하나 선택:
-
-- [ ] (a) repo를 **public 전환** → 지원 URL·privacy.html 모두 해결 (가장 간단). `gh repo edit --visibility public`
-- [ ] (b) repo는 private 유지 + **별도 공개 페이지**(Notion 등)에 지원/개인정보 페이지 마련
-- [ ] (c) 지원 URL을 다른 공개 URL로 교체
-- [ ] 선택 후 `README.md` 갱신 — 현재 stale(PRD v1.2·TTS Phase 2 등 옛 정보). 사용법·문의 이메일·이슈 링크 추가 (STORE.md가 README에 있다고 명시한 내용)
+- [x] (a) repo **public 전환** 완료 (`gh repo edit --visibility public`) → 지원/개인정보 URL 모두 200
+  - 지원 URL `https://github.com/haenara-shin/moeum` → HTTP 200
+  - 이슈 `https://github.com/haenara-shin/moeum/issues` → HTTP 200
+- [x] `README.md` 갱신 — v1.3 현행화 + 문의 이메일·이슈 링크·privacy 링크 추가
 
 ## STEP 4 — App Store Connect 메타데이터 입력
 
