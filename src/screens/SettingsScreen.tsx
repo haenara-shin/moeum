@@ -32,14 +32,25 @@ function formatTime(hour: number, minute: number): string {
   return `${period} ${h12}:${String(minute).padStart(2, '0')}`;
 }
 
+function formatHour(h: number): string {
+  const period = h < 12 ? '오전' : '오후';
+  const h12 = h % 12 === 0 ? 12 : h % 12;
+  return `${period} ${h12}시`;
+}
+
 export function SettingsScreen() {
   const { preference, setPreference } = useThemeStore();
-  const { enabled, hour, minute, setEnabled, setTime } = useNotificationStore();
+  const {
+    enabled, mode, hour, minute, intervalHours,
+    activeStartHour, activeEndHour,
+    setEnabled, setMode, setTime, setIntervalHours, setActiveWindow,
+  } = useNotificationStore();
   const folders = useFoldersStore((s) => s.folders);
   const reloadFolders = useFoldersStore((s) => s.reload);
   const [count, setCount] = useState<number | null>(null);
   const [permStatus, setPermStatus] = useState<string>('undetermined');
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showWindowPicker, setShowWindowPicker] = useState<'start' | 'end' | null>(null);
   const [busy, setBusy] = useState(false);
 
   useFocusEffect(
@@ -178,12 +189,12 @@ export function SettingsScreen() {
 
         {/* 알림 */}
         <Text className="mb-3 mt-8 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
-          매일 알림
+          알림
         </Text>
         <View className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-800">
           <View className="flex-row items-center px-4 py-4">
             <View className="flex-1">
-              <Text className="text-base text-ink-900 dark:text-white">매일 알림</Text>
+              <Text className="text-base text-ink-900 dark:text-white">알림</Text>
               <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
                 저장한 문장을 다시 만나는 시간
               </Text>
@@ -191,11 +202,34 @@ export function SettingsScreen() {
             <Switch value={enabled} onValueChange={onToggleNotification} />
           </View>
 
+          {/* 모드 선택 */}
+          {(['daily', 'interval'] as const).map((m) => (
+            <Pressable
+              key={m}
+              onPress={() => void setMode(m)}
+              disabled={!enabled}
+              className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+              style={({ pressed }) => ({ opacity: pressed ? 0.7 : enabled ? 1 : 0.4 })}
+            >
+              <View className="flex-1">
+                <Text className="text-base text-ink-900 dark:text-white">
+                  {m === 'daily' ? '하루 1번' : '시간 간격'}
+                </Text>
+                <Text className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
+                  {m === 'daily' ? '정해진 시간에 한 번' : '활성 시간대 안에서 랜덤 문장 반복'}
+                </Text>
+              </View>
+              {mode === m && (
+                <Text className="text-base text-accent-500" accessibilityLabel="선택됨">✓</Text>
+              )}
+            </Pressable>
+          ))}
+
           <Pressable
             onPress={() => setShowTimePicker((v) => !v)}
-            disabled={!enabled}
+            disabled={!enabled || mode !== 'daily'}
             className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : enabled ? 1 : 0.4 })}
+            style={({ pressed }) => ({ opacity: pressed ? 0.7 : enabled && mode === 'daily' ? 1 : 0.4 })}
           >
             <Text className="flex-1 text-base text-ink-900 dark:text-white">알림 시간</Text>
             <Text className="text-base text-gray-500 dark:text-gray-400">
@@ -203,7 +237,7 @@ export function SettingsScreen() {
             </Text>
           </Pressable>
 
-          {(Platform.OS === 'ios' ? showTimePicker : false) && enabled && (
+          {(Platform.OS === 'ios' ? showTimePicker : false) && enabled && mode === 'daily' && (
             <View className="border-t border-gray-100 dark:border-neutral-700">
               <DateTimePicker
                 value={tempDate}
@@ -216,7 +250,7 @@ export function SettingsScreen() {
             </View>
           )}
 
-          {Platform.OS === 'android' && showTimePicker && enabled && (
+          {Platform.OS === 'android' && showTimePicker && enabled && mode === 'daily' && (
             <DateTimePicker
               value={tempDate}
               mode="time"
@@ -224,6 +258,79 @@ export function SettingsScreen() {
               onChange={onTimeChange}
               is24Hour={false}
             />
+          )}
+
+          {/* 간격 모드 UI */}
+          {mode === 'interval' && enabled && (
+            <>
+              <View className="border-t border-gray-100 px-4 py-4 dark:border-neutral-700">
+                <Text className="mb-3 text-base text-ink-900 dark:text-white">알림 간격</Text>
+                <View className="flex-row gap-2">
+                  {([1, 2, 3, 4] as const).map((h) => (
+                    <Pressable
+                      key={h}
+                      onPress={() => void setIntervalHours(h)}
+                      className={`flex-1 items-center rounded-xl py-2 ${
+                        intervalHours === h ? 'bg-accent-500' : 'bg-gray-100 dark:bg-neutral-700'
+                      }`}
+                    >
+                      <Text className={intervalHours === h ? 'text-white' : 'text-ink-900 dark:text-white'}>
+                        {h}시간
+                      </Text>
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+              {(['start', 'end'] as const).map((which) => (
+                <Pressable
+                  key={which}
+                  onPress={() => setShowWindowPicker((v) => (v === which ? null : which))}
+                  className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+                >
+                  <Text className="flex-1 text-base text-ink-900 dark:text-white">
+                    {which === 'start' ? '시작 시간' : '종료 시간'}
+                  </Text>
+                  <Text className="text-base text-gray-500 dark:text-gray-400">
+                    {formatHour(which === 'start' ? activeStartHour : activeEndHour)}
+                  </Text>
+                </Pressable>
+              ))}
+              {showWindowPicker && (
+                <View className="border-t border-gray-100 dark:border-neutral-700">
+                  <DateTimePicker
+                    value={(() => {
+                      const d = new Date();
+                      d.setHours(showWindowPicker === 'start' ? activeStartHour : activeEndHour, 0, 0, 0);
+                      return d;
+                    })()}
+                    mode="time"
+                    display="spinner"
+                    minuteInterval={30}
+                    onChange={(event: DateTimePickerEvent, date?: Date) => {
+                      if (event.type !== 'set' || !date) return;
+                      const h = date.getHours();
+                      const next =
+                        showWindowPicker === 'start'
+                          ? { start: h, end: activeEndHour }
+                          : { start: activeStartHour, end: h };
+                      if (next.start >= next.end) {
+                        Alert.alert('시간대 오류', '시작 시간은 종료 시간보다 빨라야 해요.');
+                        return;
+                      }
+                      void setActiveWindow(next.start, next.end);
+                    }}
+                    locale="ko-KR"
+                  />
+                </View>
+              )}
+              {count === 0 && (
+                <View className="border-t border-gray-100 px-4 py-3 dark:border-neutral-700">
+                  <Text className="text-xs text-gray-500 dark:text-gray-400">
+                    문장을 먼저 모아보세요 — 저장된 문장이 있어야 알림이 예약됩니다.
+                  </Text>
+                </View>
+              )}
+            </>
           )}
 
           {permStatus === 'denied' && (
