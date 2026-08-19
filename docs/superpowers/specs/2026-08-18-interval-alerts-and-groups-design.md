@@ -2,8 +2,8 @@
 
 | 메타 | 값 |
 |---|---|
-| 날짜 | 2026-08-18 (v1) → 2026-08-19 (**v3**) |
-| 상태 | v3 개정 — 사용자 리뷰 대기 |
+| 날짜 | 2026-08-18 (v1) → 2026-08-19 (**v3.1 — 최종**) |
+| 상태 | 확정 — Codex 3차 리뷰 잔여 1건 반영 완료, 구현 단계 진입 |
 | 범위 | v0.1.0 출시 범위 확장: ① 시간 간격 랜덤 문장 알림, ② 초대제 비공개 그룹(공유·댓글·♥) |
 | 제외 (v0.2+) | 소셜 푸시(서버 발송), 전체 공개 피드, Universal Link 초대, 소유권 이전, Android |
 | 선행 문서 | `docs/PRD.md` v1.3, `docs/RELEASE_CHECKLIST.md` |
@@ -28,6 +28,8 @@
 | m1 배지 전이 미정의 | `lastSeenAt` 초기화·갱신 시점 정의 (§2.7) |
 | m2 문장 0개 동작 누락 | v1 동작 복원 + 정합성 트리거 연결 (§1.2) |
 | m3 preview 프로필 중복 지시 | 기존 `eas.json` preview(실기기 internal) 프로필 사용으로 정정 (§4) |
+
+- **v3.1** (Codex 3차 최종 판정의 잔여 Major 1건 반영): members `get/list`를 `isActiveMember`로 강화 — 그룹 삭제 후 고스트 멤버가 타 멤버 문서(닉네임·lastSeenAt 등)를 조회할 수 없도록 차단. 이로써 3차 리뷰 기준 잔여 이슈 0건.
 
 ## 0. 배경과 출시 전략
 
@@ -112,7 +114,7 @@ reports/{r}:              { targetPath, contentSnapshot, reporterUid, reason, cr
 | groups/{g} | create | `ownerUid == auth.uid` + 필드 검증 ∧ `existsAfter(members/$(auth.uid))` ∧ `getAfter(/inviteCodes/$(code)).data.groupId == g` |
 | groups/{g} | update | owner만. 변경 가능 = `name`, 또는 `inviteCode`(로테이션 배치: `getAfter(신코드).groupId == g`). `ownerUid`·`createdAt` 불변 |
 | groups/{g} | delete | `isOwner(g)` — **"멤버가 본인뿐" 확인은 UI 권고(완화된 불변식)**. 삭제 즉시 잔여 멤버 접근은 `isActiveMember` 게이트로 차단 |
-| members/{uid} | get/list | `isMember(g)` 또는 `resource.data.uid == auth.uid` |
+| members/{uid} | get/list | `isActiveMember(g)` 또는 `resource.data.uid == auth.uid` — 그룹 삭제 후 고스트 멤버는 본인 문서만 조회 가능 |
 | members/{uid} | create | `uid == auth.uid == 문서ID` + 필드 검증 ∧ 다음 중 하나: ① **초대 참여**: `get(/inviteCodes/$(request.resource.data.inviteCode)).data.groupId == g` (기존 그룹 — 코드 문서 선존재) ② **owner 부트스트랩**: `!exists(/groups/$(g))` ∧ `getAfter(/groups/$(g)).data.ownerUid == auth.uid` (그룹 생성 배치) |
 | members/{uid} | update | `uid == auth.uid`, 변경 가능 = `nickname`·`lastSeenAt` |
 | members/{uid} | delete | ① 본인: `uid == auth.uid` ∧ (`!exists(/groups/$(g))`〈고스트 정리〉 ∨ `!isOwner(g)`〈나가기〉 ∨ `!existsAfter(/groups/$(g))`〈그룹 삭제 배치〉) ② 내보내기: `isOwner(g)` |
@@ -200,7 +202,7 @@ v0.2 백로그: 서버 푸시(+Blaze/Functions 재검토), 공개 피드, 소유
 ## 5. 테스트 전략
 
 - 상시 `pnpm lint`(tsc). M1: 순수 함수(슬롯 날짜·64 한도·큐 재조정·세대 전이·트리거 분기) 유닛 테스트.
-- **M3 게이트**: `@firebase/rules-unit-testing` + 에뮬레이터로 §2.4a 행별 허용/거부 + §2.4b 쿼리(색인 포함) 자동화. 특히: 코드 `list` 시도 거부, owner 부트스트랩 성공/위조 실패, 톰스톤된 글 댓글 생성 거부, 그룹 문서 삭제 후 콘텐츠 접근 거부, 계정 삭제 루프 멱등성.
+- **M3 게이트**: `@firebase/rules-unit-testing` + 에뮬레이터로 §2.4a 행별 허용/거부 + §2.4b 쿼리(색인 포함) 자동화. 특히: 코드 `list` 시도 거부, owner 부트스트랩 성공/위조 실패, 톰스톤된 글 댓글 생성 거부, 그룹 문서 삭제 후 콘텐츠 접근 거부, **고스트 멤버의 타 멤버 문서 조회 거부(본인 것만 허용)**, 계정 삭제 루프 멱등성.
 - 콜드 스타트 딥링크: 실기기 수동 검증(M1·M6). TestFlight 2인 실사용(M6). 알림은 축소 설정으로 검증.
 
 ## 6. 리스크와 완화
@@ -223,4 +225,4 @@ v0.2 백로그: 서버 푸시(+Blaze/Functions 재검토), 공개 피드, 소유
 - 새 맥 첫 세션: "docs/CONTEXT.md 읽고 이어서".
 
 ---
-Adversarial review: applied — Codex GPT-5.4, 2회 (1차 2026-08-18: C5·I12·m3 / 2차 2026-08-19: B3·M7·m3, session 01a01386-6213-73b2-b850-18b66ed33257). 2차 지적 13건 전면 반영(v3).
+Adversarial review: applied — Codex GPT-5.4, 3회 (session 01a01386-6213-73b2-b850-18b66ed33257). 1차 17건 → v2 / 2차 13건 → v3 / 3차 최종 판정 잔여 1건(members get/list) → v3.1 반영, 잔여 0건.
