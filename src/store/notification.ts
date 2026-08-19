@@ -21,14 +21,14 @@ type NotificationState = {
 };
 
 // 순환 참조 회피 — scheduler는 이 store를 정적 import하므로 역방향은 동적 import
-async function requestIntegritySync(): Promise<void> {
-  const m = await import('../lib/intervalScheduler');
-  await m.syncNotificationSchedule('integrity');
+// 코얼레싱: 800ms 내 연속 호출은 마지막 한 번의 sync로 병합 (setter는 더 이상 완료를 기다리지 않음)
+function requestIntegritySyncSoon(): void {
+  void import('../lib/intervalScheduler').then((m) => m.debouncedSync('integrity', 800));
 }
 
 export const useNotificationStore = create<NotificationState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       enabled: false,
       mode: 'daily',
       hour: 8,
@@ -42,34 +42,34 @@ export const useNotificationStore = create<NotificationState>()(
           const granted = await requestPermission();
           if (!granted) {
             set({ enabled: false });
-            await requestIntegritySync();
+            requestIntegritySyncSoon();
             return false;
           }
         }
         set({ enabled });
-        await requestIntegritySync();
+        requestIntegritySyncSoon();
         return true;
       },
 
       setMode: async (mode) => {
         set({ mode });
-        await requestIntegritySync();
+        requestIntegritySyncSoon();
       },
 
       setTime: async (hour, minute) => {
         set({ hour, minute });
-        await requestIntegritySync();
+        requestIntegritySyncSoon();
       },
 
       setIntervalHours: async (h) => {
         set({ intervalHours: h });
-        await requestIntegritySync();
+        requestIntegritySyncSoon();
       },
 
       setActiveWindow: async (start, end) => {
         if (start >= end) return; // UI가 막지만 최종 방어
         set({ activeStartHour: start, activeEndHour: end });
-        await requestIntegritySync();
+        requestIntegritySyncSoon();
       },
     }),
     {
@@ -96,10 +96,12 @@ export const useNotificationStore = create<NotificationState>()(
 /** persist hydration 완료 대기 — scheduler 실행 전제 (spec §1.2) */
 export function waitForNotificationHydration(): Promise<void> {
   if (useNotificationStore.persist.hasHydrated()) return Promise.resolve();
-  return new Promise((resolve) => {
+  const hydrationPromise = new Promise<void>((resolve) => {
     const unsub = useNotificationStore.persist.onFinishHydration(() => {
       unsub();
       resolve();
     });
   });
+  // 손상된 스토리지에서 무한 대기 방지 — 타임아웃 시 기본값으로 진행, 다음 sync가 수렴
+  return Promise.race([hydrationPromise, new Promise<void>((r) => setTimeout(r, 3000))]);
 }

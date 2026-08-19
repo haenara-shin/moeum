@@ -16,6 +16,7 @@ import {
   cancelDaily,
   cancelNotifications,
   getPermissionStatus,
+  getScheduledIdsByPrefix,
   scheduleDaily,
   scheduleQuoteNotification,
   scheduleReminderNotification,
@@ -24,6 +25,7 @@ import { listQuotesForScheduler } from '../db';
 import { useNotificationStore, waitForNotificationHydration } from '../store/notification';
 
 const STATE_KEY = 'moeum-interval-state';
+const INTERVAL_ID_PREFIX = 'moeum-interval-';
 
 type SchedulerState = {
   generation: number;
@@ -35,7 +37,8 @@ async function loadState(): Promise<SchedulerState | null> {
   try {
     const raw = await AsyncStorage.getItem(STATE_KEY);
     return raw ? (JSON.parse(raw) as SchedulerState) : null;
-  } catch {
+  } catch (e) {
+    console.warn('[intervalScheduler]', e);
     return null;
   }
 }
@@ -48,7 +51,7 @@ async function saveState(s: SchedulerState): Promise<void> {
 let chain: Promise<void> = Promise.resolve();
 
 export function syncNotificationSchedule(reason: 'integrity' | 'topup'): Promise<void> {
-  chain = chain.then(() => run(reason)).catch(() => {});
+  chain = chain.then(() => run(reason)).catch((e) => console.warn('[intervalScheduler]', e));
   return chain;
 }
 
@@ -58,8 +61,11 @@ async function run(reason: 'integrity' | 'topup'): Promise<void> {
   const prev = (await loadState()) ?? { generation: 0, queue: { ids: [], cursor: 0 }, scheduled: [] };
 
   const cancelAllInterval = async () => {
-    if (prev.scheduled.length > 0) {
-      await cancelNotifications(prev.scheduled.map((s) => s.id));
+    // 유실된 상태 키(loadState 실패 등)로 인한 고아 알림도 함께 정리 — OS 기준 접두사 스윕
+    const orphanIds = await getScheduledIdsByPrefix(INTERVAL_ID_PREFIX);
+    const idSet = new Set<string>([...prev.scheduled.map((s) => s.id), ...orphanIds]);
+    if (idSet.size > 0) {
+      await cancelNotifications(Array.from(idSet));
       await saveState({ ...prev, scheduled: [] });
     }
   };
@@ -95,11 +101,15 @@ async function run(reason: 'integrity' | 'topup'): Promise<void> {
     activeEndHour: st.activeEndHour,
   };
   const now = Date.now();
-  const futureCount = prev.scheduled.filter((s) => s.at > now).length;
+  const futureCount = prev.scheduled.filter((s) => s.at > now && !s.id.endsWith('-reminder')).length;
   if (reason === 'topup' && futureCount >= firesPerDay(settings)) return; // 하루치 이상 남음
 
-  // 전체 재예약 (세대 +1)
-  await cancelNotifications(prev.scheduled.map((s) => s.id));
+  // 전체 재예약 (세대 +1) — 유실된 세대의 고아 알림도 함께 정리
+  const orphanIds = await getScheduledIdsByPrefix(INTERVAL_ID_PREFIX);
+  const cancelIds = new Set<string>([...prev.scheduled.map((s) => s.id), ...orphanIds]);
+  if (cancelIds.size > 0) {
+    await cancelNotifications(Array.from(cancelIds));
+  }
   const generation = prev.generation + 1;
   const { fireDates, reminderDate } = computeSlotPlan(settings, new Date(now));
   const bodyById = new Map(quotes.map((q) => [q.id, q.body]));
@@ -131,18 +141,23 @@ async function run(reason: 'integrity' | 'topup'): Promise<void> {
       scheduled.push({ id: rid, at: reminderDate.getTime() });
     }
   } finally {
-    // 부분 실패 시에도 성공분만큼만 커서 커밋 (spec §1.2)
+    // 부분 실패 시 성공분만 커서 커밋 — 단 takeFromQueue가 도중 재셔플한 경우 근사(중복/건너뜀 1사이클 허용)
     queue = consumed === fireDates.length ? next : { ids: next.ids, cursor: Math.min(queue.cursor + consumed, next.ids.length) };
     await saveState({ generation, queue, scheduled });
   }
 }
 
 let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+let pendingReason: 'integrity' | 'topup' | null = null;
 
-export function debouncedSync(reason: 'integrity' | 'topup'): void {
+// 코얼레싱: 대기 중 'integrity'가 한 번이라도 있었으면 이후 'topup' 호출이 있어도 'integrity'로 승격
+export function debouncedSync(reason: 'integrity' | 'topup', delayMs = 5000): void {
+  pendingReason = pendingReason === 'integrity' ? 'integrity' : reason;
   if (debounceTimer) clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     debounceTimer = null;
-    void syncNotificationSchedule(reason);
-  }, 5000);
+    const fireReason = pendingReason ?? reason;
+    pendingReason = null;
+    void syncNotificationSchedule(fireReason);
+  }, delayMs);
 }

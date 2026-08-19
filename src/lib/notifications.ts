@@ -61,6 +61,11 @@ export async function getScheduledDaily(): Promise<Notifications.NotificationReq
   return all.find((n) => n.identifier === DAILY_NOTIFICATION_ID) ?? null;
 }
 
+export async function getScheduledIdsByPrefix(prefix: string): Promise<string[]> {
+  const all = await Notifications.getAllScheduledNotificationsAsync();
+  return all.map((n) => n.identifier).filter((id) => id.startsWith(prefix));
+}
+
 export async function scheduleQuoteNotification(
   identifier: string,
   body: string,
