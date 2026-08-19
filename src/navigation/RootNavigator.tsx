@@ -6,18 +6,26 @@ import {
   type Theme,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useColorScheme } from 'react-native';
-import type { RootStackParamList } from './types';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Text, useColorScheme } from 'react-native';
+import type {
+  GroupsStackParamList,
+  RootStackParamList,
+  RootTabParamList,
+} from './types';
 import { ListScreen } from '../screens/ListScreen';
 import { NewScreen } from '../screens/NewScreen';
 import { DetailScreen } from '../screens/DetailScreen';
 import { EditScreen } from '../screens/EditScreen';
 import { SettingsScreen } from '../screens/SettingsScreen';
+import { GroupsGateScreen } from '../screens/GroupsGateScreen';
 import { useThemeStore, resolveScheme } from '../store/theme';
 
-const Stack = createNativeStackNavigator<RootStackParamList>();
+const Tab = createBottomTabNavigator<RootTabParamList>();
+const QuotesStack = createNativeStackNavigator<RootStackParamList>();
+const GroupsStack = createNativeStackNavigator<GroupsStackParamList>();
 
-export const navigationRef = createNavigationContainerRef<RootStackParamList>();
+export const navigationRef = createNavigationContainerRef<RootTabParamList>();
 
 const lightTheme: Theme = {
   ...DefaultTheme,
@@ -43,6 +51,40 @@ const darkTheme: Theme = {
   },
 };
 
+function QuotesStackNavigator() {
+  return (
+    <QuotesStack.Navigator
+      initialRouteName="List"
+      screenOptions={{ headerTitleStyle: { fontWeight: '700' } }}
+    >
+      <QuotesStack.Screen name="List" component={ListScreen} options={{ title: '모두의 마음가짐' }} />
+      <QuotesStack.Screen
+        name="New"
+        component={NewScreen}
+        options={{ title: '새 문장', presentation: 'modal' }}
+      />
+      <QuotesStack.Screen name="Detail" component={DetailScreen} options={{ title: '' }} />
+      <QuotesStack.Screen
+        name="Edit"
+        component={EditScreen}
+        options={{ title: '편집', presentation: 'modal' }}
+      />
+    </QuotesStack.Navigator>
+  );
+}
+
+function GroupsStackNavigator() {
+  return (
+    <GroupsStack.Navigator screenOptions={{ headerTitleStyle: { fontWeight: '700' } }}>
+      <GroupsStack.Screen name="GroupsGate" component={GroupsGateScreen} options={{ title: '모임' }} />
+    </GroupsStack.Navigator>
+  );
+}
+
+function TabIcon({ glyph }: { glyph: string }) {
+  return <Text style={{ fontSize: 18 }}>{glyph}</Text>;
+}
+
 export function RootNavigator() {
   const system = useColorScheme();
   const preference = useThemeStore((s) => s.preference);
@@ -51,26 +93,35 @@ export function RootNavigator() {
 
   return (
     <NavigationContainer ref={navigationRef} theme={theme}>
-      <Stack.Navigator
-        initialRouteName="List"
+      <Tab.Navigator
         screenOptions={{
-          headerTitleStyle: { fontWeight: '700' },
+          headerShown: false,
+          tabBarActiveTintColor: theme.colors.primary,
+          tabBarLabelStyle: { fontFamily: 'Pretendard-Bold', fontSize: 11 },
         }}
       >
-        <Stack.Screen name="List" component={ListScreen} options={{ title: '모두의 마음가짐' }} />
-        <Stack.Screen
-          name="New"
-          component={NewScreen}
-          options={{ title: '새 문장', presentation: 'modal' }}
+        <Tab.Screen
+          name="MyQuotesTab"
+          component={QuotesStackNavigator}
+          options={{ tabBarLabel: '내 문장', tabBarIcon: () => <TabIcon glyph="✍️" /> }}
         />
-        <Stack.Screen name="Detail" component={DetailScreen} options={{ title: '' }} />
-        <Stack.Screen
-          name="Edit"
-          component={EditScreen}
-          options={{ title: '편집', presentation: 'modal' }}
+        <Tab.Screen
+          name="GroupsTab"
+          component={GroupsStackNavigator}
+          options={{ tabBarLabel: '모임', tabBarIcon: () => <TabIcon glyph="👥" /> }}
         />
-        <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: '설정' }} />
-      </Stack.Navigator>
+        <Tab.Screen
+          name="SettingsTab"
+          component={SettingsScreen}
+          options={{
+            headerShown: true,
+            title: '설정',
+            headerTitleStyle: { fontWeight: '700' },
+            tabBarLabel: '설정',
+            tabBarIcon: () => <TabIcon glyph="⚙️" />,
+          }}
+        />
+      </Tab.Navigator>
     </NavigationContainer>
   );
 }

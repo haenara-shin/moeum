@@ -17,9 +17,9 @@ async function navigateWhenReady(quoteId: number): Promise<void> {
   if (!navigationRef.isReady()) return;
   const quote = await getQuote(quoteId);
   if (quote) {
-    navigationRef.navigate('Detail', { id: quoteId });
+    navigationRef.navigate('MyQuotesTab', { screen: 'Detail', params: { id: quoteId } });
   } else {
-    navigationRef.navigate('List'); // 삭제된 문장 폴백 (spec §1.3)
+    navigationRef.navigate('MyQuotesTab', { screen: 'List' }); // 삭제된 문장 폴백 (spec §1.3)
   }
 }
 

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActionSheetIOS,
   ActivityIndicator,
@@ -55,31 +55,6 @@ export function ListScreen() {
   const themePref = useThemeStore((s) => s.preference);
   const scheme = resolveScheme(themePref, systemScheme);
   const placeholderColor = scheme === 'dark' ? '#666' : '#9CA3AF';
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable
-          onPress={() => navigation.navigate('Settings')}
-          accessibilityLabel="설정"
-          hitSlop={16}
-          style={({ pressed }) => ({
-            opacity: pressed ? 0.5 : 1,
-          })}
-        >
-          <Text
-            style={{
-              fontSize: 16,
-              fontFamily: 'Pretendard-Bold',
-              color: '#5B4FE5',
-            }}
-          >
-            설정
-          </Text>
-        </Pressable>
-      ),
-    });
-  }, [navigation]);
 
   useEffect(() => {
     setSearch(debouncedSearch);
