@@ -225,39 +225,43 @@ export function SettingsScreen() {
             </Pressable>
           ))}
 
-          <Pressable
-            onPress={() => setShowTimePicker((v) => !v)}
-            disabled={!enabled || mode !== 'daily'}
-            className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
-            style={({ pressed }) => ({ opacity: pressed ? 0.7 : enabled && mode === 'daily' ? 1 : 0.4 })}
-          >
-            <Text className="flex-1 text-base text-ink-900 dark:text-white">알림 시간</Text>
-            <Text className="text-base text-gray-500 dark:text-gray-400">
-              {formatTime(hour, minute)}
-            </Text>
-          </Pressable>
+          {mode === 'daily' && (
+            <>
+              <Pressable
+                onPress={() => setShowTimePicker((v) => !v)}
+                disabled={!enabled}
+                className="flex-row items-center border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : enabled ? 1 : 0.4 })}
+              >
+                <Text className="flex-1 text-base text-ink-900 dark:text-white">알림 시간</Text>
+                <Text className="text-base text-gray-500 dark:text-gray-400">
+                  {formatTime(hour, minute)}
+                </Text>
+              </Pressable>
 
-          {(Platform.OS === 'ios' ? showTimePicker : false) && enabled && mode === 'daily' && (
-            <View className="border-t border-gray-100 dark:border-neutral-700">
-              <DateTimePicker
-                value={tempDate}
-                mode="time"
-                display="spinner"
-                onChange={onTimeChange}
-                locale="ko-KR"
-                themeVariant={preference === 'dark' ? 'dark' : preference === 'light' ? 'light' : undefined}
-              />
-            </View>
-          )}
+              {(Platform.OS === 'ios' ? showTimePicker : false) && enabled && (
+                <View className="border-t border-gray-100 dark:border-neutral-700">
+                  <DateTimePicker
+                    value={tempDate}
+                    mode="time"
+                    display="spinner"
+                    onChange={onTimeChange}
+                    locale="ko-KR"
+                    themeVariant={preference === 'dark' ? 'dark' : preference === 'light' ? 'light' : undefined}
+                  />
+                </View>
+              )}
 
-          {Platform.OS === 'android' && showTimePicker && enabled && mode === 'daily' && (
-            <DateTimePicker
-              value={tempDate}
-              mode="time"
-              display="default"
-              onChange={onTimeChange}
-              is24Hour={false}
-            />
+              {Platform.OS === 'android' && showTimePicker && enabled && (
+                <DateTimePicker
+                  value={tempDate}
+                  mode="time"
+                  display="default"
+                  onChange={onTimeChange}
+                  is24Hour={false}
+                />
+              )}
+            </>
           )}
 
           {/* 간격 모드 UI */}
@@ -320,6 +324,7 @@ export function SettingsScreen() {
                       void setActiveWindow(next.start, next.end);
                     }}
                     locale="ko-KR"
+                    themeVariant={preference === 'dark' ? 'dark' : preference === 'light' ? 'light' : undefined}
                   />
                 </View>
               )}
