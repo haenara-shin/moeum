@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeSlotPlan, firesPerDay, truncateBody, type IntervalSettings } from '../intervalSchedule';
+import { computeSlotPlan, firesPerDay, truncateBody, reconcileQueue, takeFromQueue, type IntervalSettings, type QueueState } from '../intervalSchedule';
 
 describe('truncateBody', () => {
   it('90자 이하는 그대로 반환한다', () => {
@@ -82,3 +82,59 @@ describe('computeSlotPlan', () => {
     }
   });
 });
+
+// mulberry32 — 시드 고정 rng
+function seeded(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+describe('reconcileQueue', () => {
+  it('prev 없으면 전체 ID를 셔플해 cursor 0으로 시작한다', () => {
+    const q = reconcileQueue(null, [1, 2, 3, 4, 5], seeded(1));
+    expect([...q.ids].sort((a, b) => a - b)).toEqual([1, 2, 3, 4, 5]);
+    expect(q.cursor).toBe(0);
+  });
+
+  it('삭제된 ID는 제거되고 cursor가 보정된다', () => {
+    const prev: QueueState = { ids: [3, 1, 4, 2, 5], cursor: 3 }; // 3,1,4 소진됨
+    const q = reconcileQueue(prev, [1, 2, 5], seeded(1)); // 3,4 삭제
+    expect(q.ids).toHaveLength(3);
+    expect(q.cursor).toBe(1); // 소진분(3,1,4) 중 생존 = 1 하나
+    expect(q.ids.slice(0, 1)).toEqual([1]);
+  });
+
+  it('신규 ID는 미소진 구간에만 삽입된다', () => {
+    const prev: QueueState = { ids: [1, 2, 3, 4], cursor: 2 };
+    const q = reconcileQueue(prev, [1, 2, 3, 4, 99], seeded(7));
+    expect(q.ids.slice(0, 2)).toEqual([1, 2]); // 소진 구간 불변
+    expect(q.ids).toContain(99);
+    expect(q.ids.indexOf(99)).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('takeFromQueue', () => {
+  it('cursor가 전진하며 뽑는다', () => {
+    const { picked, next } = takeFromQueue({ ids: [10, 20, 30], cursor: 0 }, 2, seeded(1));
+    expect(picked).toEqual([10, 20]);
+    expect(next.cursor).toBe(2);
+  });
+
+  it('소진되면 재셔플해 이어서 뽑는다 — 요청 수만큼 항상 반환', () => {
+    const { picked, next } = takeFromQueue({ ids: [1, 2, 3], cursor: 2 }, 4, seeded(2));
+    expect(picked).toHaveLength(4);
+    expect(picked[0]).toBe(3); // 재셔플 전 잔여분 먼저
+    expect(next.cursor).toBe(3); // 3 소진 후 재셔플 → 3개 중 3개 소진
+  });
+
+  it('빈 큐면 빈 결과를 돌려준다', () => {
+    const { picked } = takeFromQueue({ ids: [], cursor: 0 }, 5, seeded(1));
+    expect(picked).toEqual([]);
+  });
+});
+

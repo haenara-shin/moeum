@@ -45,3 +45,57 @@ export function computeSlotPlan(s: IntervalSettings, now: Date): SlotPlan {
       : new Date(last.getFullYear(), last.getMonth(), last.getDate() + 1, s.activeStartHour, 0, 0, 0);
   return { fireDates, reminderDate };
 }
+
+export type QueueState = { ids: number[]; cursor: number };
+
+function shuffle(arr: number[], rng: () => number): number[] {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1));
+    [a[i], a[j]] = [a[j]!, a[i]!];
+  }
+  return a;
+}
+
+export function reconcileQueue(
+  prev: QueueState | null,
+  currentIds: number[],
+  rng: () => number,
+): QueueState {
+  if (!prev) return { ids: shuffle(currentIds, rng), cursor: 0 };
+  const currentSet = new Set(currentIds);
+  const kept: number[] = [];
+  let cursor = 0;
+  prev.ids.forEach((id, idx) => {
+    if (!currentSet.has(id)) return;
+    kept.push(id);
+    if (idx < prev.cursor) cursor++;
+  });
+  const prevSet = new Set(prev.ids);
+  for (const id of currentIds) {
+    if (prevSet.has(id)) continue;
+    const pos = cursor + Math.floor(rng() * (kept.length - cursor + 1));
+    kept.splice(pos, 0, id);
+  }
+  return { ids: kept, cursor };
+}
+
+export function takeFromQueue(
+  q: QueueState,
+  count: number,
+  rng: () => number,
+): { picked: number[]; next: QueueState } {
+  if (q.ids.length === 0) return { picked: [], next: q };
+  let ids = [...q.ids];
+  let cursor = q.cursor;
+  const picked: number[] = [];
+  while (picked.length < count) {
+    if (cursor >= ids.length) {
+      ids = shuffle(ids, rng);
+      cursor = 0;
+    }
+    picked.push(ids[cursor]!);
+    cursor++;
+  }
+  return { picked, next: { ids, cursor } };
+}
