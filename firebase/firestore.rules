@@ -1,0 +1,18 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /users/{uid} {
+      allow get: if request.auth != null && request.auth.uid == uid;
+      allow create, update: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['nickname', 'createdAt', 'blockedUids', 'rulesVersion', 'rulesAcceptedAt'])
+        && request.resource.data.nickname is string
+        && request.resource.data.nickname.size() >= 1
+        && request.resource.data.nickname.size() <= 20;
+      // list·delete 불가 (delete는 M5 계정 삭제에서 허용 예정)
+    }
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
