@@ -63,3 +63,7 @@ targets/**/generated.entitlements
 _phase1_5_targets/**/Assets.xcassets/
 _phase1_5_targets/**/Info.plist
 _phase1_5_targets/**/generated.entitlements
+
+# CNG(prebuild) 네이티브 생성물 — EAS/로컬 빌드 시 재생성
+/ios
+/android
