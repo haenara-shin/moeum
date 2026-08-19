@@ -15,7 +15,8 @@
   2) 초대제 비공개 그룹 (SIWA + Firestore, 공유·댓글·♥·푸시)
 - 설계 spec: `docs/superpowers/specs/2026-08-18-interval-alerts-and-groups-design.md` — **v3 (2026-08-19, Codex GPT-5.4 적대적 리뷰 2회 반영)** ← 구현 전 필독
 - 핵심 결정 (2026-08-19): **서버리스 유지**(Spark, Functions·카드 등록 없음) → 소셜 푸시는 v0.2 연기(새 글 배지로 대체), 삭제는 톰스톤+isActiveMember 게이트, 보안 규칙 매트릭스(spec §2.4a)가 M3 완료 게이트. 변조 클라이언트 쿼터 남용은 **명시적 수용 리스크**(spec §6).
-- 다음 단계: spec v3 사용자 리뷰 → 구현 계획(writing-plans) 작성 → M1부터 구현.
+- spec **v3.1 확정** (Codex 3차 리뷰 통과, 잔여 0건). 구현 계획: `docs/superpowers/plans/2026-08-19-m1-interval-notifications.md` (M1, Task 1~10) — M2~M5 plan은 각 마일스톤 진입 시 spec 기준으로 작성.
+- 다음 단계: **M1 plan 실행** (Task 1부터).
 
 ## 마일스톤 체크리스트 (spec §4)
 
