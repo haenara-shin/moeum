@@ -45,6 +45,16 @@
 - [ ] 월 1회: 삭제된 그룹의 고아 하위 문서 콘솔 정리
 - [ ] 이상 사용량 감지 시: 해당 uid를 콘솔에서 Auth 비활성화 (spec §6 수용 리스크 대응)
 
+## ⚠️ 로컬 iOS 빌드 경로 제약 (2026-08-19 발견)
+
+- 이 repo의 기본 경로(`~/Documents/2_Study (Python, Math)/…`)는 **공백·괄호 때문에 로컬 `pnpm ios` 빌드가 불가** — expo-constants의 Xcode 스크립트가 경로를 따옴표 없이 실행해 bash 구문 오류 발생. (EAS 클라우드 빌드는 무관)
+- 해법: **공백 없는 경로의 로컬 빌드용 클론** 사용 — `~/dev/moeum` (origin=GitHub). 시뮬레이터 실행 절차:
+  ```bash
+  git -C ~/dev/moeum pull && pnpm -C ~/dev/moeum install && pnpm -C ~/dev/moeum ios
+  ```
+- 회사 맥에서도 동일하게 공백 없는 경로에 클론할 것.
+- 관련 함정 하나 더: `pnpm add`가 lockfile만 갱신하고 package.json 반영이 유실된 사례 있음(빌드 #16 실패 원인) — **의존성 추가 후 `grep <pkg> package.json`으로 확인**.
+
 ## 새 맥 셋업
 
 ```bash
