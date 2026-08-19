@@ -60,3 +60,39 @@ export async function getScheduledDaily(): Promise<Notifications.NotificationReq
   const all = await Notifications.getAllScheduledNotificationsAsync();
   return all.find((n) => n.identifier === DAILY_NOTIFICATION_ID) ?? null;
 }
+
+export async function scheduleQuoteNotification(
+  identifier: string,
+  body: string,
+  date: Date,
+  quoteId: number,
+): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    identifier,
+    content: {
+      title: '모두의 마음가짐',
+      body,
+      sound: 'default',
+      data: { quoteId },
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
+  });
+}
+
+export async function scheduleReminderNotification(identifier: string, date: Date): Promise<void> {
+  await Notifications.scheduleNotificationAsync({
+    identifier,
+    content: {
+      title: '모두의 마음가짐',
+      body: '앱을 열면 알림이 이어져요',
+      sound: 'default',
+    },
+    trigger: { type: Notifications.SchedulableTriggerInputTypes.DATE, date },
+  });
+}
+
+export async function cancelNotifications(identifiers: string[]): Promise<void> {
+  await Promise.all(
+    identifiers.map((id) => Notifications.cancelScheduledNotificationAsync(id).catch(() => {})),
+  );
+}

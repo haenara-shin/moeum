@@ -192,6 +192,12 @@ export async function getRandomQuotes(n: number, folderId?: number | null | 'all
   );
 }
 
+/** 간격 알림 스케줄러 전용 — LIMIT 없이 전체 (spec §1.2) */
+export async function listQuotesForScheduler(): Promise<{ id: number; body: string }[]> {
+  const db = await getDb();
+  return db.getAllAsync<{ id: number; body: string }>(`SELECT id, body FROM quotes`);
+}
+
 // === Folders ===
 
 export async function listFolders(): Promise<Folder[]> {
