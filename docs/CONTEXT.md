@@ -13,19 +13,24 @@
 - 사용자 결정: **v0.1.0 출시 전에 두 기능을 추가**한다 —
   1) 시간 간격 랜덤 문장 알림 (1·2·3·4h, 활성 시간대, 배치 예약)
   2) 초대제 비공개 그룹 (SIWA + Firestore, 공유·댓글·♥·푸시)
-- 설계 승인 완료: `docs/superpowers/specs/2026-08-18-interval-alerts-and-groups-design.md` ← **구현 전 필독**
-- 다음 단계: 구현 계획(writing-plans) 작성 → M1부터 구현.
+- 설계 spec: `docs/superpowers/specs/2026-08-18-interval-alerts-and-groups-design.md` — **v2 (2026-08-19, Codex GPT-5.4 적대적 리뷰 반영)** ← 구현 전 필독
+- 핵심 결정 (2026-08-19): **서버리스 유지**(Spark, Functions·카드 등록 없음) → 소셜 푸시는 v0.2 연기(새 글 배지로 대체), 삭제는 톰스톤 방식, 보안 규칙 매트릭스(spec §2.4a)가 M3 완료 게이트.
+- 다음 단계: spec v2 사용자 리뷰 → 구현 계획(writing-plans) 작성 → M1부터 구현.
 
 ## 마일스톤 체크리스트 (spec §4)
 
-- [ ] M1 간격 알림 (로컬 전용)
-- [ ] M2 3탭 재편 + Firebase 셋업 + SIWA + 닉네임 (dev client 재빌드)
-- [ ] M3 그룹 CRUD + 초대 코드 + 보안 규칙 + 에뮬레이터 테스트
-- [ ] M4 피드 (올리기·댓글·♥)
-- [ ] M5 푸시 (entitlement 복구 + APNs 키 + 클라이언트 발송, dev client 재빌드)
-- [ ] M6 신고·차단·계정 삭제·규칙 동의
-- [ ] M7 privacy.html·STORE.md 개정 + 빌드 #16 + TestFlight 2인 검증
-- [ ] M8 ASC 메타데이터 + 심사 제출 (`docs/RELEASE_CHECKLIST.md` STEP 4~7)
+- [ ] M1 간격 알림 전체 + 순수 함수 유닛 테스트 (재빌드 불필요)
+- [ ] M2 3탭 재편 + Firebase(JS SDK) + SIWA(nonce) + 닉네임 + eas preview 프로필 (dev client 재빌드)
+- [ ] M3 그룹 생성/참여/로테이션 + 규칙 매트릭스 + 에뮬레이터 테스트 (통과 = 게이트)
+- [ ] M4 피드·올리기·댓글·♥ + 새 글 배지
+- [ ] M5 신고·차단·톰스톤 삭제·그룹 삭제·계정 삭제 + 로그아웃 정리
+- [ ] M6 privacy.html·STORE.md·RELEASE_CHECKLIST.md 개정 + 빌드 #16 + TestFlight 2인 검증
+- [ ] M7 ASC 메타데이터 + 심사 제출
+
+## 운영 루틴 (출시 후 상시 — spec §3)
+
+- [ ] 주 1회: Firebase 콘솔 `reports` 확인, 신고 48시간 내 대응 (긴급 = 콘솔에서 해당 글 톰스톤 처리)
+- [ ] 월 1회: 삭제된 그룹의 고아 하위 문서 콘솔 정리
 
 ## 새 맥 셋업
 
