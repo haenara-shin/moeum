@@ -2,6 +2,7 @@ import {
   NavigationContainer,
   DefaultTheme,
   DarkTheme,
+  createNavigationContainerRef,
   type Theme,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -15,6 +16,8 @@ import { SettingsScreen } from '../screens/SettingsScreen';
 import { useThemeStore, resolveScheme } from '../store/theme';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
+
+export const navigationRef = createNavigationContainerRef<RootStackParamList>();
 
 const lightTheme: Theme = {
   ...DefaultTheme,
@@ -47,7 +50,7 @@ export function RootNavigator() {
   const theme = scheme === 'dark' ? darkTheme : lightTheme;
 
   return (
-    <NavigationContainer theme={theme}>
+    <NavigationContainer ref={navigationRef} theme={theme}>
       <Stack.Navigator
         initialRouteName="List"
         screenOptions={{
