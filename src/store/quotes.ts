@@ -57,6 +57,7 @@ export const useQuotesStore = create<QuotesState>((set, get) => ({
     await db.updateQuote(id, input, folderId);
     await get().reload();
     void syncWidget();
+    debouncedSync('integrity');
   },
 
   remove: async (id) => {

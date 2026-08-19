@@ -35,11 +35,13 @@ async function handleResponse(response: Notifications.NotificationResponse): Pro
 }
 
 export function initNotificationRouting(): () => void {
-  void Notifications.getLastNotificationResponseAsync().then((res) => {
-    if (res) void handleResponse(res);
-  });
+  void Notifications.getLastNotificationResponseAsync()
+    .then((res) => {
+      if (res) void handleResponse(res).catch((e) => console.warn('[notificationRouting]', e));
+    })
+    .catch((e) => console.warn('[notificationRouting]', e));
   const sub = Notifications.addNotificationResponseReceivedListener((res) => {
-    void handleResponse(res);
+    void handleResponse(res).catch((e) => console.warn('[notificationRouting]', e));
   });
   return () => sub.remove();
 }

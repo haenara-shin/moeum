@@ -9,7 +9,7 @@ import { getDb } from './src/db';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { TtsPlayerBar } from './src/components/TtsPlayerBar';
 import { syncWidget } from './src/lib/widgetSync';
-import { syncNotificationSchedule } from './src/lib/intervalScheduler';
+import { syncNotificationSchedule, flushDebouncedSync } from './src/lib/intervalScheduler';
 import { initNotificationRouting } from './src/lib/notificationRouting';
 
 // 모든 Text / TextInput 기본 폰트 = Pretendard-Regular
@@ -47,6 +47,7 @@ export default function App() {
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') void syncNotificationSchedule('topup');
+      else flushDebouncedSync();
     });
     return () => sub.remove();
   }, []);

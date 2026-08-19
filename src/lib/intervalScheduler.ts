@@ -161,3 +161,13 @@ export function debouncedSync(reason: 'integrity' | 'topup', delayMs = 5000): vo
     void syncNotificationSchedule(fireReason);
   }, delayMs);
 }
+
+/** 백그라운드 전환 직전 보류 중인 디바운스를 즉시 실행 — 앱 종료로 설정 변경 반영이 유실되는 꼬리 위험 방지 */
+export function flushDebouncedSync(): void {
+  if (!debounceTimer) return;
+  clearTimeout(debounceTimer);
+  debounceTimer = null;
+  const fireReason = pendingReason ?? 'topup';
+  pendingReason = null;
+  void syncNotificationSchedule(fireReason);
+}

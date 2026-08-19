@@ -12,7 +12,7 @@ import type { Folder, FolderInput } from '../types/folder';
 
 const DB_NAME = 'moeum.db';
 
-let dbInstance: SQLite.SQLiteDatabase | null = null;
+let dbInitPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 async function ensureColumn(db: SQLite.SQLiteDatabase, table: string, column: string, def: string) {
   const cols = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table})`);
@@ -21,8 +21,17 @@ async function ensureColumn(db: SQLite.SQLiteDatabase, table: string, column: st
   }
 }
 
-export async function getDb(): Promise<SQLite.SQLiteDatabase> {
-  if (dbInstance) return dbInstance;
+export function getDb(): Promise<SQLite.SQLiteDatabase> {
+  if (!dbInitPromise) {
+    dbInitPromise = initDb().catch((e) => {
+      dbInitPromise = null; // 실패 시 다음 호출이 재시도 (기존 동작 유지)
+      throw e;
+    });
+  }
+  return dbInitPromise;
+}
+
+async function initDb(): Promise<SQLite.SQLiteDatabase> {
   const db = await SQLite.openDatabaseAsync(DB_NAME);
   await db.execAsync('PRAGMA journal_mode = WAL;');
   await db.execAsync('PRAGMA foreign_keys = ON;');
@@ -44,7 +53,6 @@ export async function getDb(): Promise<SQLite.SQLiteDatabase> {
     `INSERT OR REPLACE INTO meta(key, value) VALUES ('schema_version', ?)`,
     String(SCHEMA_VERSION),
   );
-  dbInstance = db;
   return db;
 }
 
