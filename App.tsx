@@ -2,12 +2,15 @@ import './global.css';
 import { useEffect, useState } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import { ActivityIndicator, Text, TextInput, View } from 'react-native';
+import { AppState } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useFonts } from 'expo-font';
 import { getDb } from './src/db';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { TtsPlayerBar } from './src/components/TtsPlayerBar';
 import { syncWidget } from './src/lib/widgetSync';
+import { syncNotificationSchedule } from './src/lib/intervalScheduler';
+import { initNotificationRouting } from './src/lib/notificationRouting';
 
 // 모든 Text / TextInput 기본 폰트 = Pretendard-Regular
 // fontWeight: 'bold'인 경우 Pretendard-Bold 자동 매핑은 RN이 처리하지 못하므로
@@ -34,11 +37,21 @@ export default function App() {
         setReady(true);
         // 앱 부팅 시 위젯 큐 한 번 갱신 (앱 외부에서 데이터 변경된 경우 대비)
         void syncWidget();
+        void syncNotificationSchedule('topup');
       } catch (e) {
         setError((e as Error).message);
       }
     })();
   }, []);
+
+  useEffect(() => {
+    const sub = AppState.addEventListener('change', (state) => {
+      if (state === 'active') void syncNotificationSchedule('topup');
+    });
+    return () => sub.remove();
+  }, []);
+
+  useEffect(() => initNotificationRouting(), []);
 
   const allReady = ready && fontsLoaded;
 

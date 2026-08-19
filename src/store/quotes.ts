@@ -3,6 +3,7 @@ import type { Quote, QuoteInput } from '../types/quote';
 import * as db from '../db';
 import type { FolderSelector } from './folders';
 import { syncWidget } from '../lib/widgetSync';
+import { debouncedSync } from '../lib/intervalScheduler';
 
 type QuotesState = {
   items: Quote[];
@@ -48,6 +49,7 @@ export const useQuotesStore = create<QuotesState>((set, get) => ({
     const id = await db.insertQuote(input, folderId);
     await get().reload();
     void syncWidget();
+    debouncedSync('topup');
     return id;
   },
 
@@ -61,6 +63,7 @@ export const useQuotesStore = create<QuotesState>((set, get) => ({
     await db.deleteQuote(id);
     await get().reload();
     void syncWidget();
+    debouncedSync('integrity');
   },
 
   move: async (id, folderId) => {

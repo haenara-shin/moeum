@@ -18,6 +18,7 @@ import { useFoldersStore } from '../store/folders';
 import { getPermissionStatus } from '../lib/notifications';
 import { countQuotes } from '../db';
 import { exportAndShare, pickAndImport } from '../lib/backup';
+import { debouncedSync } from '../lib/intervalScheduler';
 
 const THEME_OPTIONS: { value: ThemePreference; label: string; hint: string }[] = [
   { value: 'system', label: '시스템 기본', hint: 'iOS 설정의 다크모드 따름' },
@@ -109,6 +110,7 @@ export function SettingsScreen() {
       ].filter(Boolean);
       Alert.alert('가져오기 완료', lines.join('\n'));
       void countQuotes('all').then(setCount);
+      debouncedSync('topup');
     } catch (e) {
       Alert.alert('가져오기 실패', (e as Error).message);
     } finally {
