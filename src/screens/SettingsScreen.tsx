@@ -15,6 +15,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useThemeStore, type ThemePreference } from '../store/theme';
 import { useNotificationStore } from '../store/notification';
 import { useFoldersStore } from '../store/folders';
+import { useAuthStore } from '../store/auth';
 import { getPermissionStatus } from '../lib/notifications';
 import { countQuotes } from '../db';
 import { exportAndShare, pickAndImport } from '../lib/backup';
@@ -47,6 +48,7 @@ export function SettingsScreen() {
   } = useNotificationStore();
   const folders = useFoldersStore((s) => s.folders);
   const reloadFolders = useFoldersStore((s) => s.reload);
+  const { uid, profile, signOutUser } = useAuthStore();
   const [count, setCount] = useState<number | null>(null);
   const [permStatus, setPermStatus] = useState<string>('undetermined');
   const [showTimePicker, setShowTimePicker] = useState(false);
@@ -389,6 +391,41 @@ export function SettingsScreen() {
             </View>
             <Text className="text-base text-gray-400 dark:text-gray-500">↘︎</Text>
           </Pressable>
+        </View>
+
+        {/* 계정 */}
+        <Text className="mb-3 mt-8 text-xs font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">
+          계정
+        </Text>
+        <View className="overflow-hidden rounded-2xl bg-white dark:bg-neutral-800">
+          {uid ? (
+            <>
+              <View className="flex-row items-center px-4 py-4">
+                <Text className="flex-1 text-base text-ink-900 dark:text-white">닉네임</Text>
+                <Text className="text-base text-gray-500 dark:text-gray-400">
+                  {profile?.nickname ?? '설정 전'}
+                </Text>
+              </View>
+              <Pressable
+                onPress={() =>
+                  Alert.alert('로그아웃할까요?', '모임 데이터는 서버에 안전하게 남아 있어요.', [
+                    { text: '취소', style: 'cancel' },
+                    { text: '로그아웃', style: 'destructive', onPress: () => void signOutUser() },
+                  ])
+                }
+                className="border-t border-gray-100 px-4 py-4 dark:border-neutral-700"
+                style={({ pressed }) => ({ opacity: pressed ? 0.7 : 1 })}
+              >
+                <Text className="text-base text-red-500 dark:text-red-400">로그아웃</Text>
+              </Pressable>
+            </>
+          ) : (
+            <View className="px-4 py-4">
+              <Text className="text-sm text-gray-500 dark:text-gray-400">
+                모임 탭에서 Apple로 로그인하면 문장을 나눌 수 있어요.
+              </Text>
+            </View>
+          )}
         </View>
 
         {/* 정보 */}
