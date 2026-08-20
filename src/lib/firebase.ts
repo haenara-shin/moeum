@@ -4,15 +4,14 @@ import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// TODO(M2-T2): Firebase 콘솔 값으로 교체 필요 — 값 교체 전까지 모임 탭 로그인은 동작하지 않음
 // 공개 가능한 클라이언트 식별값 — 보안은 Firestore 규칙이 담당 (spec §2.2)
 const firebaseConfig = {
-  apiKey: '<콘솔 값>',
-  authDomain: '<콘솔 값>',
-  projectId: '<콘솔 값>',
-  storageBucket: '<콘솔 값>',
-  messagingSenderId: '<콘솔 값>',
-  appId: '<콘솔 값>',
+  apiKey: 'AIzaSyB2c4S097q7e8l-XV1OroGF2_YAPLLV5vg',
+  authDomain: 'moeum-app.firebaseapp.com',
+  projectId: 'moeum-app',
+  storageBucket: 'moeum-app.firebasestorage.app',
+  messagingSenderId: '567386321943',
+  appId: '1:567386321943:web:2bb27ab9792ceb4a9bd852',
 };
 
 export const app = initializeApp(firebaseConfig);

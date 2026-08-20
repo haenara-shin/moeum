@@ -22,7 +22,8 @@
 - 설계 spec: `docs/superpowers/specs/2026-08-18-interval-alerts-and-groups-design.md` — **v3 (2026-08-19, Codex GPT-5.4 적대적 리뷰 2회 반영)** ← 구현 전 필독
 - 핵심 결정 (2026-08-19): **서버리스 유지**(Spark, Functions·카드 등록 없음) → 소셜 푸시는 v0.2 연기(새 글 배지로 대체), 삭제는 톰스톤+isActiveMember 게이트, 보안 규칙 매트릭스(spec §2.4a)가 M3 완료 게이트. 변조 클라이언트 쿼터 남용은 **명시적 수용 리스크**(spec §6).
 - spec **v3.1 확정** (Codex 3차 리뷰 통과, 잔여 0건). 구현 계획: M1 `plans/2026-08-19-m1-interval-notifications.md`(완료) / **M2 `plans/2026-08-19-m2-tabs-firebase-siwa.md`(작성 완료, 실행 대기)** — M3~M5는 각 마일스톤 진입 시 작성.
-- 다음 단계 (2026-08-20 갱신): **① Firebase 콘솔 셋업** — M2 plan T2 Step 1의 5단계(프로젝트 `moeum` 생성 → 웹 앱 → config 6개 값 → Apple 로그인 활성화 → Firestore 서울·프로덕션 + 규칙 게시) 후 `src/lib/firebase.ts` TODO 교체 **② SIWA 실검증 + M1 회귀 체크** **③ M1 실기기 수동 검증**(아래 체크리스트) **④ M3 plan 작성**.
+- 다음 단계 (2026-08-20 갱신): **① SIWA 실검증 + M1 회귀 체크** (집 맥 `~/dev/moeum`에서 `git pull` 후 `pnpm ios`) **② M1 실기기 수동 검증**(아래 체크리스트) **③ M3 plan 작성**.
+- Firebase 운영 메모: 프로젝트 ID **`moeum-app`** (구글 계정 haenara.shin@gmail.com). 규칙 배포는 repo 루트에서 `pnpm dlx firebase-tools deploy --only firestore:rules` (`firebase.json`·`.firebaserc` 커밋됨). 콘솔에 빈 프로젝트 `moeum-modufamily`가 하나 더 있음 — 미사용, 삭제 예정.
 
 ## 마일스톤 체크리스트 (spec §4)
 
@@ -37,7 +38,7 @@
 - [ ] 문장 재추가 → 다음 정각 알림 재개(보충 스케줄)
 - [ ] "하루 1번" 모드 전환 → 간격 알림 중지, 매일 알림만
 - [ ] 설정 변경 직후 곧바로 홈으로 나가도 다음 알림이 새 설정을 따르는지 (백그라운드 플러시 검증)
-- [x] M2 3탭 재편 + Firebase(JS SDK) + SIWA(nonce) + 닉네임 — **코드 완료·리뷰 통과·부팅 검증 (2026-08-20, `2920180`..`4a1e903`)**. 잔여: ① Firebase 콘솔 config 6개 값 채우기(`src/lib/firebase.ts` TODO) ② SIWA 실검증(시뮬레이터는 설정 앱에 Apple ID 로그인 필요) ③ M1 회귀 수동 체크
+- [x] M2 3탭 재편 + Firebase(JS SDK) + SIWA(nonce) + 닉네임 — **코드 완료·리뷰 통과·부팅 검증 (2026-08-20, `2920180`..`4a1e903`)**. Firebase 셋업 완료 (2026-08-20, 회사 맥 CLI): 프로젝트 `moeum-app`·config 반영·Firestore(서울) 생성·규칙 게시·Apple 로그인 활성화. 잔여: ① SIWA 실검증(시뮬레이터는 설정 앱에 Apple ID 로그인 필요) ② M1 회귀 수동 체크
 - [ ] M3 그룹 생성/참여/로테이션 + 규칙 매트릭스 + 에뮬레이터 테스트 (통과 = 게이트)
 - [ ] M4 피드·올리기·댓글·♥ + 새 글 배지
 - [ ] M5 신고·차단·톰스톤 삭제·그룹 삭제·계정 삭제 + 로그아웃 정리
