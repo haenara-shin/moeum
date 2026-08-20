@@ -7,7 +7,13 @@
 
 **모두의 마음가짐 (moeum)** — 문장 수집 iOS 앱. RN 0.81 + Expo SDK 54(고정) + pnpm(hoisted) + Dev Client + EAS.
 
-## 현재 위치 (2026-08-18)
+## 머신 역할 (2026-08-20 결정)
+
+- **집 맥** — 개발·유지보수 (Claude Code 세션). 로컬 시뮬레이터 빌드는 공백 없는 클론 `~/dev/moeum`에서.
+- **회사 맥** — 서비스 운영 (Firebase 콘솔 루틴·ASC/스토어 관리·EAS 빌드 트리거 등 아래 "운영 루틴" 담당).
+- 두 맥 모두 GitHub `main`이 단일 진실 원천 — **세션 종료 전 반드시 커밋·push**, 시작 시 `git pull` + 이 문서 확인.
+
+## 현재 위치 (2026-08-20)
 
 - Phase 1 코어 완료, 빌드 #15(production) 성공했으나 **App Store 미제출 → 폐기 예정**.
 - 사용자 결정: **v0.1.0 출시 전에 두 기능을 추가**한다 —
@@ -16,7 +22,7 @@
 - 설계 spec: `docs/superpowers/specs/2026-08-18-interval-alerts-and-groups-design.md` — **v3 (2026-08-19, Codex GPT-5.4 적대적 리뷰 2회 반영)** ← 구현 전 필독
 - 핵심 결정 (2026-08-19): **서버리스 유지**(Spark, Functions·카드 등록 없음) → 소셜 푸시는 v0.2 연기(새 글 배지로 대체), 삭제는 톰스톤+isActiveMember 게이트, 보안 규칙 매트릭스(spec §2.4a)가 M3 완료 게이트. 변조 클라이언트 쿼터 남용은 **명시적 수용 리스크**(spec §6).
 - spec **v3.1 확정** (Codex 3차 리뷰 통과, 잔여 0건). 구현 계획: M1 `plans/2026-08-19-m1-interval-notifications.md`(완료) / **M2 `plans/2026-08-19-m2-tabs-firebase-siwa.md`(작성 완료, 실행 대기)** — M3~M5는 각 마일스톤 진입 시 작성.
-- 다음 단계: **① M1 검증** — 시뮬레이터(`pnpm ios`) + TestFlight(`pnpm exec eas build --platform ios --profile production --auto-submit` → 빌드 #16) **② M2 plan 실행** (T2에서 Firebase 콘솔 수동 셋업 필요 — plan에 단계 명시).
+- 다음 단계 (2026-08-20 갱신): **① Firebase 콘솔 셋업** — M2 plan T2 Step 1의 5단계(프로젝트 `moeum` 생성 → 웹 앱 → config 6개 값 → Apple 로그인 활성화 → Firestore 서울·프로덕션 + 규칙 게시) 후 `src/lib/firebase.ts` TODO 교체 **② SIWA 실검증 + M1 회귀 체크** **③ M1 실기기 수동 검증**(아래 체크리스트) **④ M3 plan 작성**.
 
 ## 마일스톤 체크리스트 (spec §4)
 
